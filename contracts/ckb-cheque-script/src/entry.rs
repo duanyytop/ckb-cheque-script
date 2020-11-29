@@ -20,8 +20,19 @@ pub fn main() -> Result<(), Error> {
         return Err(Error::InvalidArgument);
     }
 
-    match claim::validate() {
-        Ok(_) => return withdraw::validate(),
-        Err(err) => return Err(err)
+    if is_claim() {
+        claim::validate()
+    } else if is_withdraw() {
+        withdraw::validate()
+    } else {
+        return Err(Error::ConditionNotMatch)
     }
+}
+
+fn is_claim() -> bool {
+  return false;
+}
+
+fn is_withdraw() -> bool {
+  return false;
 }
