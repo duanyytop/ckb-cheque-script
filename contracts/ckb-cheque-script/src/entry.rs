@@ -6,7 +6,7 @@ use core::result::Result;
 use ckb_std::{
     ckb_constants::Source,
     ckb_types::{bytes::Bytes, prelude::*},
-    high_level::{load_script, load_witness_args, load_cell, QueryIter},
+    high_level::{load_script, load_witness_args},
 };
 
 use crate::error::Error;
@@ -14,6 +14,7 @@ use crate::error::Error;
 mod claim;
 mod withdraw;
 mod hash;
+mod helper;
 
 pub fn main() -> Result<(), Error> {
     let script = load_script()?;
@@ -28,10 +29,13 @@ pub fn main() -> Result<(), Error> {
     sender_lock_hash.copy_from_slice(&args[20..]);
 
     let witness_lock_is_none = load_witness_args(0, Source::Input)?.lock().to_opt().is_none();
-    let is_claim = !witness_lock_is_none || (witness_lock_is_none && has_same_input(receiver));
-    let is_withdraw = witness_lock_is_none && has_same_input(sender_lock_hash);
+    let receiver_has_same_input = helper::has_input_by_lock_hash(receiver);
+    let sender_hash_same_input = helper::has_input_by_lock_hash(sender_lock_hash);
+    let is_claim = !witness_lock_is_none || (witness_lock_is_none && receiver_has_same_input);
+    let is_withdraw = witness_lock_is_none && sender_hash_same_input;
+
     return if is_claim {
-        claim::validate()
+        claim::validate(receiver, witness_lock_is_none, sender_lock_hash)
     } else if is_withdraw {
         withdraw::validate()
     } else {
@@ -39,7 +43,3 @@ pub fn main() -> Result<(), Error> {
     }
 }
 
-fn has_same_input(parameter: [u8; 20]) -> bool {
-    QueryIter::new(load_cell, Source::Input)
-                            .any(|cell| hash::blake2b_256(cell.lock().as_slice())[0..20] == parameter)
-}

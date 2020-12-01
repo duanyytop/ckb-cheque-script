@@ -27,4 +27,10 @@ pub fn blake2b_256<T: AsRef<[u8]>>(s: T) -> [u8; 32] {
     inner_blake2b_256(s)
 }
 
+pub fn blake2b_160<T: AsRef<[u8]>>(s: T) -> [u8; 20] {
+    let mut result = [0u8; 20];
+    let hash = blake2b_256(s);
+    result.copy_from_slice(&hash);
+    result
+}
 

@@ -9,6 +9,11 @@ pub enum Error {
     Encoding,
     InvalidArgument,
     ConditionNotMatch,
+    NoMatchedReceiverInput,
+    WitnessSignatureNone,
+    SenderCapacityNotSame,
+    WrongPubKey,
+    Secp256k1Error,
 }
 
 impl From<SysError> for Error {
