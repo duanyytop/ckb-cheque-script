@@ -34,5 +34,5 @@ fn is_claim() -> bool {
 }
 
 fn is_withdraw() -> bool {
-  return false;
+  return true;
 }

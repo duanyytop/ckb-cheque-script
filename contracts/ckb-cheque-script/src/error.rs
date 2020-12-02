@@ -7,8 +7,10 @@ pub enum Error {
     ItemMissing,
     LengthNotEnough,
     Encoding,
-    InvalidArgument,
+    InvalidArgument = 5,
     ConditionNotMatch,
+    SenderLockHashNotMatch,
+    SenderWitnessNotExist,
 }
 
 impl From<SysError> for Error {
@@ -23,4 +25,3 @@ impl From<SysError> for Error {
         }
     }
 }
-
