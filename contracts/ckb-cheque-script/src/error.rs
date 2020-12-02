@@ -13,8 +13,9 @@ pub enum Error {
     WitnessSignatureWrong,
     SenderCapacityNotSame,
     WrongPubKey = 10,
-    Secp256k1Wrong,
     ClaimChequeInputSinceNotZero,
+    LoadPrefilledData,
+    RecoverPublicKey,
 }
 
 impl From<SysError> for Error {

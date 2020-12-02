@@ -6,7 +6,7 @@ use core::result::Result;
 use ckb_std::{
     ckb_constants::Source,
     ckb_types::{bytes::Bytes, prelude::*},
-    high_level::{load_script, load_script_hash, load_witness_args},
+    high_level::{load_script, load_witness_args},
 };
 
 use crate::error::Error;
@@ -45,17 +45,8 @@ pub fn main() -> Result<(), Error> {
 }
 
 fn cheque_cell_witness_is_none() -> Result<bool, Error> {
-    let cheque_lock_hash = load_script_hash()?;
-    let mut cheque_short_lock_hash = [0u8; 20];
-    cheque_short_lock_hash.copy_from_slice(&cheque_lock_hash[0..20]);
-    let cheque_position = helper::position_input_by_lock_hash(cheque_short_lock_hash);
-    return match cheque_position {
-        Some(position) => {
-            return match load_witness_args(position, Source::Input) {
-                Ok(witness_args) => Ok(witness_args.lock().to_opt().is_none()),
-                Err(_) => Ok(true)
-            }
-        },
-        None => Err(Error::Encoding)
+    return match load_witness_args(0, Source::GroupInput) {
+        Ok(witness_args) => Ok(witness_args.lock().to_opt().is_none()),
+        Err(_) => Ok(true)
     }
 }
