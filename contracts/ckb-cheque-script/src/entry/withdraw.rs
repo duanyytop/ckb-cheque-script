@@ -8,7 +8,6 @@ use ckb_std::{
   ckb_constants::Source
 };
 
-
 pub fn validate() -> Result<(), Error> {
   let script = load_script()?;
   let args: Bytes = script.args().unpack();
@@ -24,14 +23,19 @@ fn check_same_lock_cell(args: &Bytes) -> Result<bool, Error> {
   });
 
   if sender_cell_index.is_none() {
-    return Err(Error::SenderLockHashNotMatch)
+    return Err(Error::SenderLockHashNotMatch);
   }
 
   let sender_witness_args = load_witness_args(sender_cell_index.unwrap(), Source::Input);
 
-  if sender_witness_args.clone().is_ok() && sender_witness_args.clone().unwrap().total_size() != 0 {
-      return Ok(true)
-  } else {
-      return Err(Error::SenderWitnessNotExist)
+  match sender_witness_args {
+    Ok(args) => {
+      if args.total_size() != 0 {
+        Ok(true)
+      } else {
+        Err(Error::SenderWitnessNotExist)
+      }
+    }
+    Err(_) => Err(Error::SenderWitnessNotExist)
   }
 }
