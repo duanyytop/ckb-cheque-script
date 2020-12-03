@@ -13,7 +13,7 @@ pub fn validate() -> Result<(), Error> {
   let args: Bytes = script.args().unpack();
 
   check_same_lock_cell(&args)?;
-  return Ok(())
+  return Ok(());
 }
 
 fn check_same_lock_cell(args: &Bytes) -> Result<bool, Error> {
@@ -35,7 +35,7 @@ fn check_same_lock_cell(args: &Bytes) -> Result<bool, Error> {
       } else {
         Err(Error::SenderWitnessNotExist)
       }
-    }
-    Err(_) => Err(Error::SenderWitnessNotExist)
+    },
+    Err(err) => Err(err.into())
   }
 }
