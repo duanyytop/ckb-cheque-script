@@ -16,6 +16,8 @@ pub enum Error {
     ClaimChequeInputSinceNotZero,
     LoadPrefilledData,
     RecoverPublicKey,
+    NoMatchedSenderInput,
+    WithdrawChequeInputSinceError,
 }
 
 impl From<SysError> for Error {
