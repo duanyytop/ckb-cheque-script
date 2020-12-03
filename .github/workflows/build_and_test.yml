@@ -1,4 +1,4 @@
-name: Build and test
+name: Github CI
 
 on: [push, pull_request]
 
