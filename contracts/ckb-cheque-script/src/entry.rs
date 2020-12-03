@@ -40,12 +40,12 @@ pub fn main() -> Result<(), Error> {
     } else if is_withdraw {
         withdraw::validate(sender_lock_hash)
     } else {
-        return Err(Error::ConditionNotMatch)
+        Err(Error::NoMatchedInputOrWitness)
     }
 }
 
 fn cheque_cell_witness_is_none() -> Result<bool, Error> {
-    return match load_witness_args(0, Source::GroupInput) {
+    match load_witness_args(0, Source::GroupInput) {
         Ok(witness_args) => Ok(witness_args.lock().to_opt().is_none()),
         Err(_) => Ok(true)
     }

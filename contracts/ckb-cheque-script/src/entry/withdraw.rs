@@ -6,8 +6,7 @@ use crate::error::Error;
 use super::helper;
 
 pub fn validate(sender_lock_hash: [u8; 20]) -> Result<(), Error> {
-  // TODO: Calculate cheque cell since
-  const CHEQUE_CELL_SINCE: u64 = 0;
+  const CHEQUE_CELL_SINCE: u64 = 0xA000000000000006;
 
   let cheque_inputs = helper::load_group_inputs();
   for input in cheque_inputs.iter() {
