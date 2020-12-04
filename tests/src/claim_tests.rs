@@ -80,6 +80,7 @@ fn build_test_context_with_receiver_cell(
     outputs_token: Vec<u64>,
     signature: Bytes,
     since: u64,
+    another_receiver_lock_args: Option<Bytes>,
 ) -> (Context, TransactionView) {
     // deploy cheque script
     let mut context = Context::default();
@@ -92,6 +93,10 @@ fn build_test_context_with_receiver_cell(
     let receiver_always_success_lock_script = context
         .build_script(&always_success_out_point, receiver_lock_args)
         .expect("script");
+    let another_receiver_lock_script = match another_receiver_lock_args { 
+      Some(lock_args) => context.build_script(&always_success_out_point, lock_args),
+      None => None
+    };
     let receiver_always_success_lock_hash = receiver_always_success_lock_script.calc_script_hash();
     let sender_always_success_lock_script = context
         .build_script(&always_success_out_point, sender_lock_args)
@@ -106,7 +111,11 @@ fn build_test_context_with_receiver_cell(
     let cheque_script = context
             .build_script(&cheque_out_point, Bytes::copy_from_slice(&cheque_lock_args))
             .expect("script");
-      
+    
+    let receiver_lock_script = match another_receiver_lock_script {
+      Some(lock_script) => lock_script,
+      None => receiver_always_success_lock_script.clone()
+    };
     // prepare inputs
     let mut inputs = vec![];
     for index in 0..inputs_token.len() {
@@ -118,11 +127,11 @@ fn build_test_context_with_receiver_cell(
                 .lock(cheque_script.clone())
                 .build(), 
             token.to_le_bytes().to_vec().into())
-        } else if index < inputs_token.len() - 1 {
+        } else if index == 1 {
           context.create_cell(
             CellOutput::new_builder()
                 .capacity(capacity.pack())
-                .lock(receiver_always_success_lock_script.clone())
+                .lock(receiver_lock_script.clone())
                 .build(),
             token.to_le_bytes().to_vec().into())
         } else {
@@ -339,6 +348,7 @@ Bytes::from(
         Bytes::from(
             hex::decode("5500000010000000550000005500000041000000b69c542c0ee6c4b6d8350514d876ea7d8ef563e406253e959289457204447d2c4eb4e4a993073f5e76d244d2f93f7c108652e3295a9c8d72c12477e095026b9500").unwrap()),
             0,
+            None,
     );
     let tx = context.complete_tx(tx);
 
@@ -363,6 +373,7 @@ Bytes::from(
         Bytes::from(
             hex::decode("5500000010000000550000005500000041000000b69c542c0ee6c4b6d8350514d876").unwrap()),
             0,
+            None,
     );
     let tx = context.complete_tx(tx);
 
@@ -387,6 +398,7 @@ Bytes::from(
         vec![200_0000_0000, 312_0000_0000],
         Bytes::new(),
         0,
+        None,
     );
     let tx = context.complete_tx(tx);
 
@@ -409,8 +421,10 @@ Bytes::from(
                 .unwrap()),
         vec![162_0000_0000, 200_0000_0000, 150_0000_0000],
         vec![210_0000_0000, 292_0000_0000],
-        Bytes::new(),
+        Bytes::from(
+            hex::decode("5500000010000000550000005500000041000000b69c542c0ee6c4b6d8350514d876ea7d8ef563e406253e959289457204447d2c4eb4e4a993073f5e76d244d2f93f7c108652e3295a9c8d72c12477e095026b9500").unwrap()),
         0,
+        None,
     );
     let tx = context.complete_tx(tx);
 
@@ -433,8 +447,10 @@ Bytes::from(
                 .unwrap()),
         vec![162_0000_0000, 200_0000_0000, 150_0000_0000],
         vec![200_0000_0000, 312_0000_0000],
-        Bytes::new(),
+        Bytes::from(
+            hex::decode("5500000010000000550000005500000041000000b69c542c0ee6c4b6d8350514d876ea7d8ef563e406253e959289457204447d2c4eb4e4a993073f5e76d244d2f93f7c108652e3295a9c8d72c12477e095026b9500").unwrap()),
         100000,
+        None,
     );
     let tx = context.complete_tx(tx);
 
@@ -443,6 +459,33 @@ Bytes::from(
     assert_error_eq!(
         err,
         ScriptError::ValidationFailure(11).input_lock_script(script_cell_index)
+    );
+}
+
+#[test]
+fn test_claim_with_no_receiver_input() {
+    let (mut context, tx) = build_test_context_with_receiver_cell(
+  Bytes::from(
+            hex::decode("36c329ed630d6ce750712a477543672adab57f4c")
+                .unwrap()),
+Bytes::from(
+            hex::decode("f43cc005be4edf45c829363d54799ac4f7aff5a5")
+                .unwrap()),
+        vec![162_0000_0000, 200_0000_0000],
+        vec![200_0000_0000, 162_0000_0000],
+        Bytes::new(),
+        0,
+        Some(Bytes::from(
+            hex::decode("89c329ed630d6ce750712a477543672adab57f3a")
+                .unwrap())),
+    );
+    let tx = context.complete_tx(tx);
+
+    let err = context.verify_tx(&tx, MAX_CYCLES).unwrap_err();
+    let script_cell_index = 0;
+    assert_error_eq!(
+        err,
+        ScriptError::ValidationFailure(6).input_lock_script(script_cell_index)
     );
 }
 

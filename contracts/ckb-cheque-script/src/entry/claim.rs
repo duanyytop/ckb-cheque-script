@@ -19,28 +19,19 @@ pub fn validate(receiver: [u8; 20], cheque_witness_is_none: bool, sender_lock_ha
   let mut cheque_lock_hash = [0u8; 20];
   cheque_lock_hash.copy_from_slice(&script_hash[0..20]);
 
-  if !check_sender_cells_capacity_same(sender_lock_hash, cheque_lock_hash) {
-    return Err(Error::SenderCapacityNotSame);
-  }
-
   if !check_cheque_inputs_since_zero() {
     return Err(Error::ClaimChequeInputSinceNotZero);
   }
 
+  if !check_sender_cells_capacity_same(sender_lock_hash, cheque_lock_hash) {
+    return Err(Error::SenderCapacityNotSame);
+  }
+
   if cheque_witness_is_none {
     // The receiver is lock hash
-    match helper::position_input_by_lock_hash(receiver) {
-      Some(position) => {
-        match load_witness_args(position, Source::Input) {
-          Ok(witness_args) => {
-            if witness_args.lock().to_opt().is_none() {
-              return Err(Error::WitnessSignatureWrong)
-            }
-          },
-          Err(_) => return Err(Error::WitnessSignatureWrong)
-        }
-      },
-      None => return Err(Error::NoMatchedReceiverInput)
+    return match helper::position_input_by_lock_hash(receiver) {
+      Some(position) => helper::check_witness_args(position),
+      None => Err(Error::NoMatchedReceiverInput)
     }
   } else {
     // The receiver is lock args

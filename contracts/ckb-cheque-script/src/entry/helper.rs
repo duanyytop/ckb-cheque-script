@@ -1,9 +1,10 @@
 use ckb_std::{
     ckb_constants::Source,
     ckb_types::{packed::*, prelude::*},
-    high_level::{load_cell, load_input, QueryIter},
+    high_level::{load_cell, load_input, load_witness_args, QueryIter},
 };
 use alloc::vec::Vec;
+use crate::error::Error;
 use super::hash;
 
 pub fn has_input_by_lock_hash(lock_hash: [u8; 20]) -> bool {
@@ -36,4 +37,17 @@ pub fn load_group_inputs() -> Vec<CellInput> {
 
 pub fn calc_cells_capacity_sum(cells: Vec<CellOutput>) -> u64 {
   cells.into_iter().fold(0, |sum, c| sum + c.capacity().unpack())
+}
+
+pub fn check_witness_args(position: usize) -> Result<(), Error>{
+  return match load_witness_args(position, Source::Input) {
+    Ok(witness_args) => {
+      if witness_args.lock().to_opt().is_none() {
+        Err(Error::WitnessSignatureWrong)
+      } else {
+        Ok(())
+      }
+    },
+    Err(_) => Err(Error::WitnessSignatureWrong)
+  }
 }

@@ -8,7 +8,7 @@ pub enum Error {
     LengthNotEnough,
     Encoding,
     InvalidArgument = 5,
-    ConditionNotMatch,
+    NoMatchedInputOrWitness,
     NoMatchedReceiverInput,
     WitnessSignatureWrong,
     SenderCapacityNotSame,
@@ -16,6 +16,8 @@ pub enum Error {
     ClaimChequeInputSinceNotZero,
     LoadPrefilledData,
     RecoverPublicKey,
+    NoMatchedSenderInput,
+    WithdrawChequeInputSinceError = 15,
 }
 
 impl From<SysError> for Error {
