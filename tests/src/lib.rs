@@ -5,7 +5,10 @@ use std::path::PathBuf;
 use std::str::FromStr;
 
 #[cfg(test)]
-mod tests;
+mod claim_tests;
+
+#[cfg(test)]
+mod withdraw_tests;
 
 const TEST_ENV_VAR: &str = "CAPSULE_TEST_ENV";
 

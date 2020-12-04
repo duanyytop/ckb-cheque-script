@@ -7,8 +7,15 @@ pub enum Error {
     ItemMissing,
     LengthNotEnough,
     Encoding,
-    InvalidArgument,
+    InvalidArgument = 5,
     ConditionNotMatch,
+    NoMatchedReceiverInput,
+    WitnessSignatureWrong,
+    SenderCapacityNotSame,
+    WrongPubKey = 10,
+    ClaimChequeInputSinceNotZero,
+    LoadPrefilledData,
+    RecoverPublicKey,
 }
 
 impl From<SysError> for Error {
