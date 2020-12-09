@@ -40,7 +40,7 @@ pub fn main() -> Result<(), Error> {
     } else if is_withdraw {
         withdraw::validate(sender_lock_hash)
     } else {
-        Err(Error::NoMatchedInputOrWitness)
+        Err(Error::NoMatchedInputs)
     }
 }
 

@@ -8,16 +8,15 @@ pub enum Error {
     LengthNotEnough,
     Encoding,
     InvalidArgument = 5,
-    NoMatchedInputOrWitness,
-    NoMatchedReceiverInput,
+    NoMatchedInputs,
     WitnessSignatureWrong,
     SenderCapacityNotSame,
-    WrongPubKey = 10,
-    ClaimChequeInputSinceNotZero,
+    WrongPubKey,
+    ClaimChequeInputSinceNotZero = 10,
+    WithdrawChequeInputSinceError,
     LoadPrefilledData,
     RecoverPublicKey,
-    NoMatchedSenderInput,
-    WithdrawChequeInputSinceError = 15,
+    
 }
 
 impl From<SysError> for Error {
