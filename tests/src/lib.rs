@@ -5,6 +5,9 @@ use std::path::PathBuf;
 use std::str::FromStr;
 
 #[cfg(test)]
+mod entry_tests;
+
+#[cfg(test)]
 mod claim_tests;
 
 #[cfg(test)]

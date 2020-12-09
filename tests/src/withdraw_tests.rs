@@ -11,6 +11,10 @@ use ckb_tool::ckb_script::ScriptError;
 
 const MAX_CYCLES: u64 = 100_000_000;
 
+const NO_MAATCHED_INPUTS: i8 = 6;
+const WITNESS_SIGNATURE_WRONG: i8 = 7;
+const WITHDRAW_CHEQUE_INPUT_SINCE_ERROR: i8 = 11;
+
 fn build_test_context(
     sender_lock_args: Bytes,
     receiver_lock_args: Bytes,
@@ -169,7 +173,7 @@ Bytes::from(
     let script_cell_index = 0;
     assert_error_eq!(
         err,
-        ScriptError::ValidationFailure(6).input_lock_script(script_cell_index)
+        ScriptError::ValidationFailure(NO_MAATCHED_INPUTS).input_lock_script(script_cell_index)
     );
 }
 
@@ -196,7 +200,7 @@ Bytes::from(
     let script_cell_index = 0;
     assert_error_eq!(
         err,
-        ScriptError::ValidationFailure(8).input_lock_script(script_cell_index)
+        ScriptError::ValidationFailure(WITNESS_SIGNATURE_WRONG).input_lock_script(script_cell_index)
     );
 }
 
@@ -222,6 +226,6 @@ Bytes::from(
     let script_cell_index = 0;
     assert_error_eq!(
         err,
-        ScriptError::ValidationFailure(15).input_lock_script(script_cell_index)
+        ScriptError::ValidationFailure(WITHDRAW_CHEQUE_INPUT_SINCE_ERROR).input_lock_script(script_cell_index)
     );
 }

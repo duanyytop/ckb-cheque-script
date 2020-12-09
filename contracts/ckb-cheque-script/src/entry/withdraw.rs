@@ -17,6 +17,6 @@ pub fn validate(sender_lock_hash: [u8; 20]) -> Result<(), Error> {
 
   match helper::position_input_by_lock_hash(sender_lock_hash) {
     Some(position) => helper::check_witness_args(position),
-    None => Err(Error::NoMatchedSenderInput)
+    None => Err(Error::NoMatchedInputs)
   }
 }

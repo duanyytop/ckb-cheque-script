@@ -31,7 +31,7 @@ pub fn validate(receiver: [u8; 20], cheque_witness_is_none: bool, sender_lock_ha
     // The receiver is lock hash
     return match helper::position_input_by_lock_hash(receiver) {
       Some(position) => helper::check_witness_args(position),
-      None => Err(Error::NoMatchedReceiverInput)
+      None => Err(Error::NoMatchedInputs)
     }
   } else {
     // The receiver is lock args

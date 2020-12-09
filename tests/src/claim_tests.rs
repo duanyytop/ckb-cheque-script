@@ -15,6 +15,11 @@ use ckb_tool::ckb_script::ScriptError;
 
 const MAX_CYCLES: u64 = 100_000_000;
 
+const WITNESS_SIGNATURE_WRONG: i8 = 7;
+const SENDER_CAPACITY_NOT_SAME: i8 = 8;
+const WRONG_PUBKEY: i8 = 9;
+const CLAIM_CHEQUE_INPUT_SINCE_NOT_ZERO: i8 = 10;
+
 fn blake160(data: &[u8]) -> [u8; 20] {
     let mut buf = [0u8; 20];
     let hash = blake2b_256(data);
@@ -381,7 +386,7 @@ Bytes::from(
     let script_cell_index = 0;
     assert_error_eq!(
         err,
-        ScriptError::ValidationFailure(8).input_lock_script(script_cell_index)
+        ScriptError::ValidationFailure(WITNESS_SIGNATURE_WRONG).input_lock_script(script_cell_index)
     );
 }
 
@@ -406,7 +411,7 @@ Bytes::from(
     let script_cell_index = 0;
     assert_error_eq!(
         err,
-        ScriptError::ValidationFailure(8).input_lock_script(script_cell_index)
+        ScriptError::ValidationFailure(WITNESS_SIGNATURE_WRONG).input_lock_script(script_cell_index)
     );
 }
 
@@ -432,7 +437,7 @@ Bytes::from(
     let script_cell_index = 0;
     assert_error_eq!(
         err,
-        ScriptError::ValidationFailure(9).input_lock_script(script_cell_index)
+        ScriptError::ValidationFailure(SENDER_CAPACITY_NOT_SAME).input_lock_script(script_cell_index)
     );
 }
 
@@ -458,34 +463,7 @@ Bytes::from(
     let script_cell_index = 0;
     assert_error_eq!(
         err,
-        ScriptError::ValidationFailure(11).input_lock_script(script_cell_index)
-    );
-}
-
-#[test]
-fn test_claim_with_no_receiver_input() {
-    let (mut context, tx) = build_test_context_with_receiver_cell(
-  Bytes::from(
-            hex::decode("36c329ed630d6ce750712a477543672adab57f4c")
-                .unwrap()),
-Bytes::from(
-            hex::decode("f43cc005be4edf45c829363d54799ac4f7aff5a5")
-                .unwrap()),
-        vec![162_0000_0000, 200_0000_0000],
-        vec![200_0000_0000, 162_0000_0000],
-        Bytes::new(),
-        0,
-        Some(Bytes::from(
-            hex::decode("89c329ed630d6ce750712a477543672adab57f3a")
-                .unwrap())),
-    );
-    let tx = context.complete_tx(tx);
-
-    let err = context.verify_tx(&tx, MAX_CYCLES).unwrap_err();
-    let script_cell_index = 0;
-    assert_error_eq!(
-        err,
-        ScriptError::ValidationFailure(6).input_lock_script(script_cell_index)
+        ScriptError::ValidationFailure(CLAIM_CHEQUE_INPUT_SINCE_NOT_ZERO).input_lock_script(script_cell_index)
     );
 }
 
@@ -529,7 +507,7 @@ Bytes::from(
     let script_cell_index = 0;
     assert_error_eq!(
         err,
-        ScriptError::ValidationFailure(10).input_lock_script(script_cell_index)
+        ScriptError::ValidationFailure(WRONG_PUBKEY).input_lock_script(script_cell_index)
     );
 }
 
@@ -552,7 +530,7 @@ Bytes::from(
     let script_cell_index = 0;
     assert_error_eq!(
         err,
-        ScriptError::ValidationFailure(9).input_lock_script(script_cell_index)
+        ScriptError::ValidationFailure(SENDER_CAPACITY_NOT_SAME).input_lock_script(script_cell_index)
     );
 }
 
@@ -575,6 +553,6 @@ Bytes::from(
     let script_cell_index = 0;
     assert_error_eq!(
         err,
-        ScriptError::ValidationFailure(11).input_lock_script(script_cell_index)
+        ScriptError::ValidationFailure(CLAIM_CHEQUE_INPUT_SINCE_NOT_ZERO).input_lock_script(script_cell_index)
     );
 }
