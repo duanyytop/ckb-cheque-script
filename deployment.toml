@@ -8,9 +8,9 @@ location = { file = "build/release/ckb-cheque-script" }
 name = "secp256k1_data"
 enable_type_id = false
 # 0xa563884b3686078ec7e7677a5f86449b15cf2693f3c1241766c6996f206cc541 is the genesis tx hash for Dev chain.
-# 0xf8de3bb47d055cdf460d93a2a6e1b05f7432f9777c8c474abf4eec1d4aee5d37 is the genesis tx hash for Testnet.
+# 0x8f8c79eb6671709633fe6a46de93c0fedc9c1b8a6527a18d3983879542635c9f is the genesis tx hash for Testnet.
 # 0xe2fb199810d49a4d8beec56718ba2593b665db9d52299a0f9e6e75416d73ff5c is the genesis tx hash for Mainnet.
-location = { tx_hash = "0xf8de3bb47d055cdf460d93a2a6e1b05f7432f9777c8c474abf4eec1d4aee5d37", index = 3 } 
+location = { tx_hash = "0x8f8c79eb6671709633fe6a46de93c0fedc9c1b8a6527a18d3983879542635c9f", index = 3 } 
 
 [[cells]]
 name = "secp256k1_blake2b_sighash_all_dual"
