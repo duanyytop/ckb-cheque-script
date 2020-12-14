@@ -14,9 +14,7 @@ pub enum Error {
     WrongPubKey,
     ClaimChequeInputSinceNotZero = 10,
     WithdrawChequeInputSinceError,
-    LoadPrefilledData,
-    RecoverPublicKey,
-    
+    Secp256k1,
 }
 
 impl From<SysError> for Error {

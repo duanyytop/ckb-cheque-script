@@ -35,7 +35,7 @@ fn sign_tx(tx: TransactionView, key: &Privkey, is_signature_error: bool) -> Tran
       SIGNATURE_SIZE
     };
 
-    let witnesses_len = tx.inputs().len();
+    let witnesses_len = tx.witnesses().len();
     let tx_hash = tx.hash();
     let mut signed_witnesses: Vec<packed::Bytes> = Vec::new();
     let mut blake2b = new_blake2b();
@@ -70,9 +70,6 @@ fn sign_tx(tx: TransactionView, key: &Privkey, is_signature_error: bool) -> Tran
     for i in 1..witnesses_len {
         signed_witnesses.push(tx.witnesses().get(i).unwrap());
     }
-    signed_witnesses.push(
-        message.as_bytes().pack(),
-    );
     tx.as_advanced_builder()
         .set_witnesses(signed_witnesses)
         .build()
@@ -226,7 +223,7 @@ fn build_test_context_with_cheque_signature(
             .into();
     let secp256k1_out_point = context.deploy_cell(secp256k1_bin);
     let secp256k1_dep = CellDep::new_builder()
-        .out_point(secp256k1_out_point.clone())
+        .out_point(secp256k1_out_point)
         .build();
 
     let secp256k1_data_bin = BUNDLED_CELL.get("specs/cells/secp256k1_data").unwrap();
