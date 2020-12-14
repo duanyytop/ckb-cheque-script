@@ -33,6 +33,8 @@ make all-via-docker
 - Build contracts:
 
 ```sh
+# back to repo root directory
+cd .. 
 capsule build
 ```
 
