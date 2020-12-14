@@ -4,7 +4,6 @@ use core::result::Result;
 // https://nervosnetwork.github.io/ckb-std/riscv64imac-unknown-none-elf/doc/ckb_std/index.html
 use ckb_std::{
     ckb_constants::Source,
-    ckb_types::prelude::*,
     dynamic_loading::CKBDLContext,
     high_level::load_script_hash,
 };
@@ -17,7 +16,7 @@ pub fn validate(receiver: [u8; 20], cheque_witness_is_none: bool, sender_lock_ha
   let mut cheque_lock_hash = [0u8; 20];
   cheque_lock_hash.copy_from_slice(&script_hash[0..20]);
 
-  if !check_cheque_inputs_since_zero() {
+  if check_cheque_inputs_since_not_zero() {
     return Err(Error::ClaimChequeInputSinceNotZero);
   }
 
@@ -60,14 +59,9 @@ fn check_sender_cells_capacity_same(sender_lock_hash: [u8; 20], cheque_lock_hash
   sum_cheque_inputs_capacity == sum_sender_outputs_capacity - sum_sender_inputs_capacity
 }
 
-fn check_cheque_inputs_since_zero() -> bool {
-  let cheque_inputs = helper::load_group_inputs();
-  for input in cheque_inputs.iter() {
-    if input.since().unpack() > 0 {
-      return false;
-    }
-  }
-  true
+fn check_cheque_inputs_since_not_zero() -> bool {
+  let cheque_inputs_since = helper::load_group_inputs_since();
+  cheque_inputs_since.into_iter().any(|since| since != 0)
 }
 
 fn validate_blake2b_sighash_all(receiver: [u8; 20]) -> Result<(), Error> {
