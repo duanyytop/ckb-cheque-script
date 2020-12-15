@@ -4,22 +4,19 @@ use core::result::Result;
 // https://nervosnetwork.github.io/ckb-std/riscv64imac-unknown-none-elf/doc/ckb_std/index.html
 use ckb_std::{
     ckb_constants::Source,
-    ckb_types::{bytes::Bytes, prelude::*},
     dynamic_loading::CKBDLContext,
-    high_level::{load_script_hash, load_witness_args, load_transaction },
+    high_level::load_script_hash,
 };
-use alloc::vec::Vec;
 use ckb_lib_secp256k1::LibSecp256k1;
 use crate::error::Error;
 use super::helper;
-use super::hash;
 
 pub fn validate(receiver: [u8; 20], cheque_witness_is_none: bool, sender_lock_hash: [u8; 20]) -> Result<(), Error> {
   let script_hash = load_script_hash()?;
   let mut cheque_lock_hash = [0u8; 20];
   cheque_lock_hash.copy_from_slice(&script_hash[0..20]);
 
-  if !check_cheque_inputs_since_zero() {
+  if check_cheque_inputs_since_not_zero() {
     return Err(Error::ClaimChequeInputSinceNotZero);
   }
 
@@ -62,54 +59,20 @@ fn check_sender_cells_capacity_same(sender_lock_hash: [u8; 20], cheque_lock_hash
   sum_cheque_inputs_capacity == sum_sender_outputs_capacity - sum_sender_inputs_capacity
 }
 
-fn check_cheque_inputs_since_zero() -> bool {
-  let cheque_inputs = helper::load_group_inputs();
-  for input in cheque_inputs.iter() {
-    if input.since().unpack() > 0 {
-      return false;
-    }
-  }
-  true
+fn check_cheque_inputs_since_not_zero() -> bool {
+  let cheque_inputs_since = helper::load_group_inputs_since();
+  cheque_inputs_since.into_iter().any(|since| since != 0)
 }
 
 fn validate_blake2b_sighash_all(receiver: [u8; 20]) -> Result<(), Error> {
-  let witness_args = load_witness_args(0, Source::GroupInput)?;
-  let witness: Bytes = witness_args
-          .lock()
-          .to_opt()
-          .ok_or(Error::Encoding)?
-          .unpack();
-
-  let mut signature = [0u8; 65];
-  signature.copy_from_slice(&witness[..]);
-
-  let tx_hash = hash::blake2b_256(load_transaction()?.raw().as_slice());
-  let mut blake2b = hash::new_blake2b();
-  let mut message = [0u8; 32];
-  blake2b.update(&tx_hash);
-  let zero_lock: Bytes = {
-      let mut buf = Vec::new();
-      buf.resize(65, 0);
-      buf.into()
-  };
-  let witness_for_digest = witness_args
-      .as_builder()
-      .lock(Some(zero_lock).pack())
-      .build();
-  let witness_len = witness_for_digest.as_bytes().len() as u64;
-  blake2b.update(&witness_len.to_le_bytes());
-  blake2b.update(&witness_for_digest.as_bytes());
-  blake2b.finalize(&mut message);
-
   let mut context = unsafe{ CKBDLContext::<[u8; 128 * 1024]>::new()};
   let lib = LibSecp256k1::load(&mut context);
 
   // recover public_key_hash
-  let prefilled_data = lib.load_prefilled_data().map_err(|_err| Error::LoadPrefilledData)?;
-  let public_key = lib
-      .recover_pubkey(&prefilled_data, &signature, &message)
-      .map_err(|_err| Error::RecoverPublicKey)?;
-  let public_key_hash = hash::blake2b_160(public_key.as_slice());
+  let mut public_key_hash = [0u8; 20];
+  lib.validate_blake2b_sighash_all(&mut public_key_hash)
+      .map_err(|_| Error::Secp256k1)?;
+  
   if &receiver != &public_key_hash[..20] {
       return Err(Error::WrongPubKey);
   }

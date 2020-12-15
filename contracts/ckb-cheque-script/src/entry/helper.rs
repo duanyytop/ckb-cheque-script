@@ -1,7 +1,7 @@
 use ckb_std::{
     ckb_constants::Source,
     ckb_types::{packed::*, prelude::*},
-    high_level::{load_cell, load_input, load_witness_args, QueryIter},
+    high_level::{load_cell, load_input_since, load_witness_args, QueryIter},
 };
 use alloc::vec::Vec;
 use crate::error::Error;
@@ -30,8 +30,8 @@ pub fn filter_cells_by_lock_hash(lock_hash: [u8; 20], source: Source) -> Option<
     }
 }
 
-pub fn load_group_inputs() -> Vec<CellInput> {
-    QueryIter::new(load_input, Source::GroupInput)
+pub fn load_group_inputs_since() -> Vec<u64> {
+    QueryIter::new(load_input_since, Source::GroupInput)
             .collect::<Vec<_>>()
 }
 
