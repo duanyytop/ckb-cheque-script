@@ -1,7 +1,6 @@
 use ckb_std::{
     ckb_constants::Source,
     ckb_types::{packed::*, prelude::*},
-    dynamic_loading::CKBDLContext,
     high_level::{load_cell, load_input_since, load_witness_args, QueryIter},
 };
 use ckb_lib_secp256k1::{LibSecp256k1, CODE_HASH_SECP256K1};
@@ -53,11 +52,8 @@ pub fn check_witness_args(position: usize) -> Result<(), Error>{
   }
 }
 
-const TYPE: u8 = 1;
-pub fn validate_blake2b_sighash_all(lock_hash: &[u8; 20]) -> Result<(), Error> {
-  let mut context = unsafe{ CKBDLContext::<[u8; 128 * 1024]>::new()};
-  let lib = LibSecp256k1::load(&mut context);
-
+const DATA: u8 = 0;
+pub fn validate_blake2b_sighash_all(lib: &LibSecp256k1, lock_hash: &[u8; 20]) -> Result<(), Error> {
   // recover public_key_hash
   let mut public_key_hash = [0u8; 20];
   lib.validate_blake2b_sighash_all(&mut public_key_hash)
@@ -66,9 +62,9 @@ pub fn validate_blake2b_sighash_all(lock_hash: &[u8; 20]) -> Result<(), Error> {
   let lock_script = Script::new_builder()
                                 .code_hash(CODE_HASH_SECP256K1.pack())
                                 .args(public_key_hash.pack())
-                                .hash_type(Byte::new(TYPE))
+                                .hash_type(Byte::new(DATA))
                                 .build();
-  
+
   if lock_hash != &hash::blake2b_160(lock_script.as_slice()) {
       return Err(Error::WrongPubKey);
   }

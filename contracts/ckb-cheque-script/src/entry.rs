@@ -2,9 +2,11 @@ use core::result::Result;
 
 use ckb_std::{
     ckb_constants::Source,
+    dynamic_loading::CKBDLContext,
     ckb_types::{bytes::Bytes, prelude::*},
     high_level::{load_script, load_witness_args},
 };
+use ckb_lib_secp256k1::LibSecp256k1;
 use crate::error::Error;
 
 mod claim;
@@ -25,25 +27,27 @@ pub fn main() -> Result<(), Error> {
     sender_lock_hash.copy_from_slice(&args[20..]);
 
     let cheque_witness_is_none = cheque_cell_witness_is_none()?;
-    if !cheque_witness_is_none {
+    if cheque_witness_is_none {
+        // Check if the inputs contain the same input as receiver lock hash or sender lock hash
+        if helper::has_input_by_lock_hash(&receiver_lock_hash) {
+            claim::validate(&sender_lock_hash, &receiver_lock_hash, true)
+        } else if helper::has_input_by_lock_hash(&sender_lock_hash) {
+            withdraw::validate(&sender_lock_hash, true)
+        } else {
+            Err(Error::NoMatchedInputs)
+        }
+    } else {
         // Validate the signatures of receiver and sender
-        match helper::validate_blake2b_sighash_all(&receiver_lock_hash) {
-            Ok(_) => claim::validate(&sender_lock_hash, &receiver_lock_hash, true),
+        let mut context = unsafe{ CKBDLContext::<[u8; 128 * 1024]>::new()};
+        let lib = LibSecp256k1::load(&mut context);
+        match helper::validate_blake2b_sighash_all(&lib, &receiver_lock_hash) {
+            Ok(_) => claim::validate(&sender_lock_hash, &receiver_lock_hash, false),
             Err(_) => {
-                match helper::validate_blake2b_sighash_all(&sender_lock_hash) {
-                    Ok(_) => withdraw::validate(&sender_lock_hash, true),
+                match helper::validate_blake2b_sighash_all(&lib, &sender_lock_hash) {
+                    Ok(_) => withdraw::validate(&sender_lock_hash, false),
                     Err(_) => Err(Error::WrongPubKey)
                 }
             }
-        }
-    } else {
-        // Check if the inputs contain the same input as receiver lock hash or sender lock hash
-        if helper::has_input_by_lock_hash(&receiver_lock_hash) {
-            claim::validate(&sender_lock_hash, &receiver_lock_hash, false)
-        } else if helper::has_input_by_lock_hash(&sender_lock_hash) {
-            withdraw::validate(&sender_lock_hash, false)
-        } else {
-            Err(Error::NoMatchedInputs)
         }
     }
 }
