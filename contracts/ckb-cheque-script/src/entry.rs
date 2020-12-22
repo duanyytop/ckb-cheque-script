@@ -45,7 +45,7 @@ pub fn main() -> Result<(), Error> {
             Err(_) => {
                 match helper::validate_blake2b_sighash_all(&lib, &sender_lock_hash) {
                     Ok(_) => withdraw::validate(&sender_lock_hash, false),
-                    Err(_) => Err(Error::WrongPubKey)
+                    Err(_) => Err(Error::NoMatchedSignature)
                 }
             }
         }

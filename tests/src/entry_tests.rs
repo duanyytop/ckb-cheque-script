@@ -17,7 +17,7 @@ const MAX_CYCLES: u64 = 100_000_000;
 
 const INVALID_ARGUMENT: i8 = 5;
 const NO_MATCHED_INPUTS: i8 = 6;
-const WRONG_PUB_KEY: i8 = 9;
+const NO_MATCHED_SIGNATURE: i8 = 13;
 
 fn sign_tx(tx: TransactionView, key: &Privkey) -> TransactionView {
     const SIGNATURE_SIZE: usize = 65;
@@ -294,7 +294,7 @@ false,
 }
 
 #[test]
-fn test_with_wrong_pub_key() {
+fn test_with_no_matched_signature() {
     let (mut context, tx) = build_test_context(
   Bytes::from(
             hex::decode("23c329ed630d6ce750712a477543672adab57f4c")
@@ -314,6 +314,6 @@ None,
     let script_cell_index = 0;
     assert_error_eq!(
         err,
-        ScriptError::ValidationFailure(WRONG_PUB_KEY).input_lock_script(script_cell_index)
+        ScriptError::ValidationFailure(NO_MATCHED_SIGNATURE).input_lock_script(script_cell_index)
     );
 }
