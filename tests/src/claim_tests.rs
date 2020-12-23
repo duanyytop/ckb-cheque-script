@@ -13,6 +13,9 @@ use ckb_tool::ckb_hash::{blake2b_256, new_blake2b};
 use ckb_tool::ckb_error::assert_error_eq;
 use ckb_tool::ckb_script::ScriptError;
 
+use super::entry_tests::CODE_HASH_SECP256K1_BLAKE160;
+use super::entry_tests::TYPE;
+
 const MAX_CYCLES: u64 = 100_000_000;
 
 const WITNESS_SIGNATURE_WRONG: i8 = 7;
@@ -224,9 +227,11 @@ fn build_test_context_with_receiver_signature(
         .build();
 
     // build lock script
-    let receiver_secp256k1_lock_script = context
-        .build_script(&secp256k1_out_point, Bytes::copy_from_slice(&receiver_lock_args))
-        .expect("script");
+    let receiver_secp256k1_lock_script = Script::new_builder()
+                                                    .code_hash(CODE_HASH_SECP256K1_BLAKE160.pack())
+                                                    .args(receiver_lock_args.pack())
+                                                    .hash_type(Byte::new(TYPE))
+                                                    .build();
 
     let receiver_always_success_lock_script = context
         .build_script(&always_success_out_point, Bytes::copy_from_slice(&receiver_lock_args))
@@ -234,9 +239,11 @@ fn build_test_context_with_receiver_signature(
     
     let receiver_secp256k1_lock_hash = receiver_secp256k1_lock_script.calc_script_hash();
 
-    let sender_secp256k1_lock_script = context
-        .build_script(&secp256k1_out_point, sender_lock_args)
-        .expect("script");
+    let sender_secp256k1_lock_script = Script::new_builder()
+                                                    .code_hash(CODE_HASH_SECP256K1_BLAKE160.pack())
+                                                    .args(sender_lock_args.pack())
+                                                    .hash_type(Byte::new(TYPE))
+                                                    .build();
     let sender_secp256k1_lock_hash = sender_secp256k1_lock_script.calc_script_hash();
     
     let secp256k1_dep = CellDep::new_builder()
@@ -331,6 +338,9 @@ fn build_test_context_with_receiver_signature(
 
 #[test]
 fn test_claim_with_receiver_input() {
+    let code_hash = Bytes::from(
+            hex::decode("9bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce8").unwrap());
+            print!("{:?}", code_hash.pack());
     let (mut context, tx) = build_test_context_with_receiver_cell(
   Bytes::from(
             hex::decode("36c329ed630d6ce750712a477543672adab57f4c")

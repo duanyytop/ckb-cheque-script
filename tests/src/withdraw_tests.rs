@@ -13,6 +13,8 @@ use ckb_tool::ckb_hash::{blake2b_256, new_blake2b};
 use ckb_tool::ckb_error::assert_error_eq;
 use ckb_tool::ckb_script::ScriptError;
 
+use super::entry_tests::CODE_HASH_SECP256K1_BLAKE160;
+use super::entry_tests::TYPE;
 
 const MAX_CYCLES: u64 = 100_000_000;
 
@@ -206,14 +208,19 @@ fn build_test_context_with_sender_signature(
         .out_point(secp256k1_data_out_point)
         .build();
 
-    let receiver_secp256k1_lock_script = context
-        .build_script(&secp256k1_out_point, receiver_lock_args)
-        .expect("script");
+    let receiver_secp256k1_lock_script = Script::new_builder()
+                                                .code_hash(CODE_HASH_SECP256K1_BLAKE160.pack())
+                                                .args(receiver_lock_args.pack())
+                                                .hash_type(Byte::new(TYPE))
+                                                .build();
     let receiver_secp256k1_lock_hash = receiver_secp256k1_lock_script.calc_script_hash();  
 
-    let sender_secp256k1_lock_script = context
-        .build_script(&secp256k1_out_point, Bytes::copy_from_slice(&sender_lock_args))
-        .expect("script");
+
+    let sender_secp256k1_lock_script = Script::new_builder()
+                                                .code_hash(CODE_HASH_SECP256K1_BLAKE160.pack())
+                                                .args(sender_lock_args.pack())
+                                                .hash_type(Byte::new(TYPE))
+                                                .build();
     let sender_secp256k1_lock_hash = sender_secp256k1_lock_script.calc_script_hash();
     
     let secp256k1_dep = CellDep::new_builder()

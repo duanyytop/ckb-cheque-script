@@ -3,7 +3,7 @@ use ckb_std::{
     ckb_types::{packed::*, prelude::*},
     high_level::{load_cell, load_input_since, load_witness_args, QueryIter},
 };
-use ckb_lib_secp256k1::{LibSecp256k1, CODE_HASH_SECP256K1};
+use ckb_lib_secp256k1::LibSecp256k1;
 
 use alloc::vec::Vec;
 use crate::error::Error;
@@ -52,7 +52,8 @@ pub fn check_witness_args(position: usize) -> Result<(), Error>{
   }
 }
 
-const DATA: u8 = 0;
+const TYPE: u8 = 1;
+const CODE_HASH_SECP256K1_BLAKE160: [u8; 32] = [155, 215, 224, 111, 62, 207, 75, 224, 242, 252, 210, 24, 139, 35, 241, 185, 252, 200, 142, 93, 75, 101, 168, 99, 123, 23, 114, 59, 189, 163, 204, 232];
 pub fn validate_blake2b_sighash_all(lib: &LibSecp256k1, lock_hash: &[u8; 20]) -> Result<(), Error> {
   // recover public_key_hash
   let mut public_key_hash = [0u8; 20];
@@ -60,9 +61,9 @@ pub fn validate_blake2b_sighash_all(lib: &LibSecp256k1, lock_hash: &[u8; 20]) ->
       .map_err(|_| Error::Secp256k1)?;
 
   let lock_script = Script::new_builder()
-                                .code_hash(CODE_HASH_SECP256K1.pack())
+                                .code_hash(CODE_HASH_SECP256K1_BLAKE160.pack())
                                 .args(public_key_hash.pack())
-                                .hash_type(Byte::new(DATA))
+                                .hash_type(Byte::new(TYPE))
                                 .build();
 
   if lock_hash != &hash::blake2b_160(lock_script.as_slice()) {

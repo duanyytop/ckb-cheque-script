@@ -13,6 +13,9 @@ use ckb_tool::ckb_hash::new_blake2b;
 use ckb_tool::ckb_error::assert_error_eq;
 use ckb_tool::ckb_script::ScriptError;
 
+pub const TYPE: u8 = 1;
+pub const CODE_HASH_SECP256K1_BLAKE160: [u8; 32] = [155, 215, 224, 111, 62, 207, 75, 224, 242, 252, 210, 24, 139, 35, 241, 185, 252, 200, 142, 93, 75, 101, 168, 99, 123, 23, 114, 59, 189, 163, 204, 232];
+
 const MAX_CYCLES: u64 = 100_000_000;
 
 const INVALID_ARGUMENT: i8 = 5;
@@ -212,18 +215,22 @@ fn build_test_context_with_signature(
         .out_point(secp256k1_data_out_point)
         .build();
     // build lock script
-    let receiver_secp256k1_lock_script = context
-        .build_script(&secp256k1_out_point, Bytes::copy_from_slice(&receiver_lock_args))
-        .expect("script");
+    let receiver_secp256k1_lock_script = Script::new_builder()
+                                                    .code_hash(CODE_HASH_SECP256K1_BLAKE160.pack())
+                                                    .args(receiver_lock_args.pack())
+                                                    .hash_type(Byte::new(TYPE))
+                                                    .build();
     let receiver_secp256k1_lock_hash = receiver_secp256k1_lock_script.calc_script_hash();
 
     let receiver_always_success_lock_script = context
         .build_script(&always_success_out_point, Bytes::copy_from_slice(&receiver_lock_args))
         .expect("script");
 
-    let sender_secp256k1_lock_script = context
-        .build_script(&secp256k1_out_point, sender_lock_args.clone())
-        .expect("script");
+    let sender_secp256k1_lock_script = Script::new_builder()
+                                                .code_hash(CODE_HASH_SECP256K1_BLAKE160.pack())
+                                                .args(sender_lock_args.pack())
+                                                .hash_type(Byte::new(TYPE))
+                                                .build();
     let sender_secp256k1_lock_hash = sender_secp256k1_lock_script.calc_script_hash();
 
     let mut cheque_lock_args = receiver_secp256k1_lock_hash.clone().as_bytes().slice(0..20).to_vec();
