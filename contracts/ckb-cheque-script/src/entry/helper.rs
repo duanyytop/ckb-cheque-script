@@ -71,3 +71,4 @@ pub fn validate_blake2b_sighash_all(lib: &LibSecp256k1, lock_hash: &[u8; 20]) ->
   }
   Ok(())
 }
+

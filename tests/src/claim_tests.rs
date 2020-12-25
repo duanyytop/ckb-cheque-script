@@ -521,3 +521,4 @@ Bytes::from(
         ScriptError::ValidationFailure(CLAIM_CHEQUE_INPUT_SINCE_NOT_ZERO).input_lock_script(script_cell_index)
     );
 }
+

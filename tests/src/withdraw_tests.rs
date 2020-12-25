@@ -440,3 +440,4 @@ Bytes::from(
         ScriptError::ValidationFailure(WITHDRAW_CHEQUE_INPUT_SINCE_ERROR).input_lock_script(script_cell_index)
     );
 }
+

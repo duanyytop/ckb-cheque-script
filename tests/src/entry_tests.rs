@@ -389,3 +389,4 @@ Bytes::from(
         ScriptError::ValidationFailure(NO_MATCHED_SIGNATURE).input_lock_script(script_cell_index)
     );
 }
+
