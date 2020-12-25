@@ -15,6 +15,7 @@ pub enum Error {
     ClaimChequeInputSinceNotZero = 10,
     WithdrawChequeInputSinceError,
     Secp256k1,
+    NoMatchedSignature,
 }
 
 impl From<SysError> for Error {
