@@ -16,7 +16,7 @@ use ckb_tool::ckb_script::ScriptError;
 use super::entry_tests::CODE_HASH_SECP256K1_BLAKE160;
 use super::entry_tests::TYPE;
 
-const MAX_CYCLES: u64 = 100_000_000;
+const MAX_CYCLES: u64 = 10_000_000;
 
 const NO_MATCHED_INPUTS: i8 = 6;
 const WITNESS_SIGNATURE_WRONG: i8 = 7;

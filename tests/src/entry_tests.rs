@@ -16,7 +16,7 @@ use ckb_tool::ckb_script::ScriptError;
 pub const TYPE: u8 = 1;
 pub const CODE_HASH_SECP256K1_BLAKE160: [u8; 32] = [155, 215, 224, 111, 62, 207, 75, 224, 242, 252, 210, 24, 139, 35, 241, 185, 252, 200, 142, 93, 75, 101, 168, 99, 123, 23, 114, 59, 189, 163, 204, 232];
 
-const MAX_CYCLES: u64 = 100_000_000;
+const MAX_CYCLES: u64 = 10_000_000;
 
 const INVALID_ARGUMENT: i8 = 5;
 const NO_MATCHED_INPUTS: i8 = 6;
