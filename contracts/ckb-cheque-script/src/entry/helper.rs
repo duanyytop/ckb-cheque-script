@@ -54,7 +54,7 @@ pub fn check_witness_args(position: usize) -> Result<(), Error>{
 
 const TYPE: u8 = 1;
 const CODE_HASH_SECP256K1_BLAKE160: [u8; 32] = [155, 215, 224, 111, 62, 207, 75, 224, 242, 252, 210, 24, 139, 35, 241, 185, 252, 200, 142, 93, 75, 101, 168, 99, 123, 23, 114, 59, 189, 163, 204, 232];
-pub fn validate_blake2b_sighash_all(lib: &LibSecp256k1, lock_hash: &[u8; 20]) -> Result<(), Error> {
+pub fn validate_blake2b_sighash_all(lib: &LibSecp256k1, receiver_lock_hash: &[u8; 20], sender_lock_hash: &[u8; 20]) -> Result<bool, Error> {
   // recover public_key_hash
   let mut public_key_hash = [0u8; 20];
   lib.validate_blake2b_sighash_all(&mut public_key_hash)
@@ -65,10 +65,15 @@ pub fn validate_blake2b_sighash_all(lib: &LibSecp256k1, lock_hash: &[u8; 20]) ->
                                 .args(public_key_hash.pack())
                                 .hash_type(Byte::new(TYPE))
                                 .build();
+  let lock_hash = hash::blake2b_160(lock_script.as_slice());
 
-  if lock_hash != &hash::blake2b_160(lock_script.as_slice()) {
-      return Err(Error::WrongPubKey);
+  if receiver_lock_hash == &lock_hash {
+    Ok(true)
+  } else if sender_lock_hash == &lock_hash {
+    Ok(false)
+  } else {
+    Err(Error::WrongPubKey)
   }
-  Ok(())
+
 }
 
