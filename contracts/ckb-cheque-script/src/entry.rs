@@ -1,18 +1,17 @@
 use core::result::Result;
 
+use ckb_lib_secp256k1::LibSecp256k1;
 use ckb_std::{
     ckb_constants::Source,
-    dynamic_loading::CKBDLContext,
     ckb_types::{bytes::Bytes, prelude::*},
+    dynamic_loading::CKBDLContext,
     high_level::{load_script, load_witness_args},
 };
-use ckb_lib_secp256k1::LibSecp256k1;
-use crate::error::Error;
 
-mod claim;
-mod withdraw;
-mod hash;
-mod helper;
+use crate::error::Error;
+use super::claim;
+use super::helper;
+use super::withdraw;
 
 pub fn main() -> Result<(), Error> {
     let script = load_script()?;
@@ -20,7 +19,7 @@ pub fn main() -> Result<(), Error> {
     if args.len() != 40 {
         return Err(Error::InvalidArgument);
     }
-    
+
     let mut receiver_lock_hash = [0u8; 20];
     let mut sender_lock_hash = [0u8; 20];
     receiver_lock_hash.copy_from_slice(&args[0..20]);
@@ -38,7 +37,7 @@ pub fn main() -> Result<(), Error> {
         }
     } else {
         // Validate the signatures of receiver and sender
-        let mut context = unsafe{ CKBDLContext::<[u8; 128 * 1024]>::new()};
+        let mut context = unsafe { CKBDLContext::<[u8; 128 * 1024]>::new() };
         let lib = LibSecp256k1::load(&mut context);
         match helper::validate_blake2b_sighash_all(&lib, &receiver_lock_hash, &sender_lock_hash) {
             Ok(is_receiver) => {
@@ -47,8 +46,8 @@ pub fn main() -> Result<(), Error> {
                 } else {
                     withdraw::validate(&sender_lock_hash, false)
                 }
-            },
-            Err(_) => Err(Error::NoMatchedSignature)
+            }
+            Err(_) => Err(Error::NoMatchedSignature),
         }
     }
 }
@@ -56,7 +55,6 @@ pub fn main() -> Result<(), Error> {
 fn cheque_cell_witness_is_none() -> Result<bool, Error> {
     match load_witness_args(0, Source::GroupInput) {
         Ok(witness_args) => Ok(witness_args.lock().to_opt().is_none()),
-        Err(_) => Ok(true)
+        Err(_) => Ok(true),
     }
 }
-
