@@ -356,7 +356,6 @@ fn test_claim_with_receiver_input() {
     let code_hash = Bytes::from(
         hex::decode("9bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce8").unwrap(),
     );
-    print!("{:?}", code_hash.pack());
     let (mut context, tx) = build_test_context_with_receiver_cell(
   Bytes::from(
             hex::decode("36c329ed630d6ce750712a477543672adab57f4c")

@@ -1,0 +1,22 @@
+[package]
+name = "natives"
+version = "0.1.0"
+authors = ["Dylan <duanyytop@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+ckb-tool = "0.2.1"
+ckb-std = { git = "https://github.com/nervosnetwork/ckb-std", rev = "29455b8", features = ["ckb-types", "simulator"] }
+ckb-lib-secp256k1 = { path = "../ckb-lib-secp256k1" }
+blake2b-ref = "0.1"
+
+[features]
+default = ["simulator"]
+simulator = []
+
+[[bin]]
+name = "ckb-cheque-script-sim"
+path = "src/ckb_cheque_script.rs"
+required-features = ["simulator"]
