@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate lazy_static;
+
 use ckb_tool::ckb_types::bytes::Bytes;
 use std::env;
 use std::fs;
@@ -13,7 +16,9 @@ mod claim_tests;
 #[cfg(test)]
 mod withdraw_tests;
 
-lazy_static::lazy_static! {
+mod native_simulator;
+
+lazy_static! {
     static ref LOADER: Loader = Loader::default();
     static ref TX_FOLDER: PathBuf = {
         let path = LOADER.path("dumped_tests");
@@ -78,8 +83,6 @@ impl Loader {
     }
 
     pub fn load_binary(&self, name: &str) -> Bytes {
-        let mut path = self.0.clone();
-        path.push(name);
-        fs::read(path).expect("binary").into()
+        fs::read(self.path(name)).expect("binary").into()
     }
 }

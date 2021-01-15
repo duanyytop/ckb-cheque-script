@@ -1,4 +1,4 @@
-use super::*;
+use super::{*, native_simulator::write_native_setup};
 use ckb_system_scripts::BUNDLED_CELL;
 use ckb_testtool::{builtin::ALWAYS_SUCCESS, context::Context};
 use ckb_tool::ckb_crypto::secp::{Generator, Privkey};
@@ -12,6 +12,9 @@ use ckb_tool::ckb_types::{
     prelude::*,
     H256,
 };
+
+use ckb_x64_simulator::RunningSetup;
+use std::collections::HashMap;
 
 use super::entry_tests::CODE_HASH_SECP256K1_BLAKE160;
 use super::entry_tests::TYPE;
@@ -319,10 +322,19 @@ Bytes::from(
         .verify_tx(&tx, MAX_CYCLES)
         .expect("pass verification");
     println!("consume cycles: {}", cycles);
+
+    // dump raw test tx files
+    let setup = RunningSetup {
+        is_lock_script: true,
+        is_output: false,
+        script_index: 0,
+        native_binaries: HashMap::default(),
+    };
+    write_native_setup("test_withdraw_with_sender_input", "ckb-cheque-script-sim", &tx, &context, &setup);
 }
 
 #[test]
-fn test_withdraw_with_no_sender_input() {
+fn test_error_withdraw_with_no_sender_input() {
     let (mut context, tx) = build_test_context_with_sender_input(
   Bytes::from(
             hex::decode("36c329ed630d6ce750712a477543672adab57f4c")
@@ -346,10 +358,19 @@ Bytes::from(
         err,
         ScriptError::ValidationFailure(NO_MATCHED_INPUTS).input_lock_script(script_cell_index)
     );
+
+    // dump raw test tx files
+    let setup = RunningSetup {
+        is_lock_script: true,
+        is_output: false,
+        script_index: 0,
+        native_binaries: HashMap::default(),
+    };
+    write_native_setup("test_error_withdraw_with_no_sender_input", "ckb-cheque-script-sim", &tx, &context, &setup);
 }
 
 #[test]
-fn test_withdraw_with_sender_input_signature_error() {
+fn test_error_withdraw_with_sender_input_signature() {
     let (mut context, tx) = build_test_context_with_sender_input(
         Bytes::from(hex::decode("36c329ed630d6ce750712a477543672adab57f4c").unwrap()),
         Bytes::from(hex::decode("f43cc005be4edf45c829363d54799ac4f7aff5a5").unwrap()),
@@ -375,7 +396,7 @@ fn test_withdraw_with_sender_input_signature_error() {
 }
 
 #[test]
-fn test_withdraw_with_sender_input_since_error() {
+fn test_error_withdraw_with_sender_input_since() {
     let (mut context, tx) = build_test_context_with_sender_input(
   Bytes::from(
             hex::decode("36c329ed630d6ce750712a477543672adab57f4c")
@@ -399,6 +420,15 @@ Bytes::from(
         ScriptError::ValidationFailure(WITHDRAW_CHEQUE_INPUT_SINCE_ERROR)
             .input_lock_script(script_cell_index)
     );
+
+    // dump raw test tx files
+    let setup = RunningSetup {
+        is_lock_script: true,
+        is_output: false,
+        script_index: 0,
+        native_binaries: HashMap::default(),
+    };
+    write_native_setup("test_error_withdraw_with_sender_input_since", "ckb-cheque-script-sim", &tx, &context, &setup);
 }
 
 #[test]
@@ -419,7 +449,7 @@ fn test_withdraw_with_sender_signature() {
 }
 
 #[test]
-fn test_withdraw_with_sender_signature_since_error() {
+fn test_error_withdraw_with_sender_signature_since() {
     let (mut context, tx) = build_test_context_with_sender_signature(
         Bytes::from(hex::decode("f43cc005be4edf45c829363d54799ac4f7aff5a5").unwrap()),
         vec![162_0000_0000],

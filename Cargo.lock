@@ -3101,12 +3101,14 @@ dependencies = [
 name = "tests"
 version = "0.1.0"
 dependencies = [
+ "ckb-standalone-debugger",
  "ckb-system-scripts",
  "ckb-testtool",
  "ckb-tool",
  "ckb-x64-simulator",
  "hex",
  "lazy_static",
+ "serde_json",
 ]
 
 [[package]]

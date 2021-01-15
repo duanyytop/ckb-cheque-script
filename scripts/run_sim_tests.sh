@@ -1,3 +1,4 @@
+
 #!/bin/bash
 set -ex
 
@@ -6,10 +7,10 @@ set -ex
 ENVIRONMENT="$1"
 
 SCRIPT_TOP="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-TOP=$(dirname "$SCRIPT_TOP") 
+TOP="$SCRIPT_TOP/.."
 
 for i in $(find $TOP/build/$ENVIRONMENT/dumped_tests -mindepth 1 -maxdepth 1 -type d); do
-    if [[ "$i" =~ ^.*failure$ || "$i" =~ ^.*test_err.* ]]; then
+    if [[ "$i" =~ ^.*failure$ || "$i" =~ ^.*test_error.* ]]; then
         bash $i/cmd || error_code=$?
         if [[ "$error_code" -eq 0 ]]; then
            echo "Failure test passes!"

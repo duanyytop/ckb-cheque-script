@@ -1,4 +1,4 @@
-use super::*;
+use super::{*, native_simulator::write_native_setup};
 use ckb_system_scripts::BUNDLED_CELL;
 use ckb_testtool::{builtin::ALWAYS_SUCCESS, context::Context};
 use ckb_tool::ckb_crypto::secp::{Generator, Privkey};
@@ -12,6 +12,10 @@ use ckb_tool::ckb_types::{
     prelude::*,
     H256,
 };
+
+use ckb_x64_simulator::RunningSetup;
+use std::collections::HashMap;
+use std::fs;
 
 pub const TYPE: u8 = 1;
 pub const CODE_HASH_SECP256K1_BLAKE160: [u8; 32] = [
@@ -348,7 +352,7 @@ fn build_test_context_with_signature(
 }
 
 #[test]
-fn test_cheque_with_invalid_args() {
+fn test_error_cheque_with_invalid_args() {
     let (mut context, tx) = build_test_context(
         Bytes::from(hex::decode("36c329ed630d6ce750712a477543672adab5f5").unwrap()),
         Bytes::from(hex::decode("f43cc005be4edf45c829363d54799ac4f7aff5").unwrap()),
@@ -366,10 +370,19 @@ fn test_cheque_with_invalid_args() {
         err,
         ScriptError::ValidationFailure(INVALID_ARGUMENT).input_lock_script(script_cell_index)
     );
+
+    // dump raw test tx files
+    let setup = RunningSetup {
+        is_lock_script: true,
+        is_output: false,
+        script_index: 0,
+        native_binaries: HashMap::default(),
+    };
+    write_native_setup("test_error_cheque_with_invalid_args", "ckb-cheque-script-sim", &tx, &context, &setup);
 }
 
 #[test]
-fn test_claim_with_no_matched_receiver_input() {
+fn test_error_claim_with_no_matched_receiver_input() {
     let (mut context, tx) = build_test_context(
         Bytes::from(hex::decode("36c329ed630d6ce750712a477543672adab57f4c").unwrap()),
         Bytes::from(hex::decode("f43cc005be4edf45c829363d54799ac4f7aff5a5").unwrap()),
@@ -388,10 +401,19 @@ fn test_claim_with_no_matched_receiver_input() {
         err,
         ScriptError::ValidationFailure(NO_MATCHED_INPUTS).input_lock_script(script_cell_index)
     );
+
+    // dump raw test tx files
+    let setup = RunningSetup {
+        is_lock_script: true,
+        is_output: false,
+        script_index: 0,
+        native_binaries: HashMap::default(),
+    };
+    write_native_setup("test_error_claim_with_no_matched_receiver_input", "ckb-cheque-script-sim", &tx, &context, &setup);
 }
 
 #[test]
-fn test_with_no_matched_signature() {
+fn test_error_with_no_matched_signature() {
     let (mut context, tx) = build_test_context_with_signature(
         Bytes::from(hex::decode("23c329ed630d6ce750712a477543672adab57f4c").unwrap()),
         Bytes::from(hex::decode("f43cc005be4edf45c829363d54799ac4f7aff5a5").unwrap()),
