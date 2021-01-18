@@ -16,7 +16,7 @@ coverage: test
 	grcov build/$(ENVIRONMENT)/ccov.zip -s . -t lcov --llvm --branch --ignore-not-existing --ignore "/*" -o build/$(ENVIRONMENT)/lcov.info
 	genhtml -o build/$(ENVIRONMENT)/coverage/ --rc lcov_branch_coverage=1 --show-details --highlight --ignore-errors source --legend build/$(ENVIRONMENT)/lcov.info
 
-clean:
+clean:	
 	cargo clean
 	rm -rf build/$(ENVIRONMENT)
 

@@ -83,3 +83,4 @@ pub fn validate_blake2b_sighash_all(
         Err(Error::WrongPubKey)
     }
 }
+
