@@ -38,4 +38,4 @@ jobs:
         run: ./capsule/capsule build
 
       - name: Test contracts
-        run: ./capsule/capsule test
+        run: make test

@@ -1,7 +1,10 @@
-use super::*;
+use super::{*, native_simulator::write_native_setup};
 use ckb_system_scripts::BUNDLED_CELL;
 use ckb_testtool::{builtin::ALWAYS_SUCCESS, context::Context};
 use ckb_tool::ckb_crypto::secp::{Generator, Privkey};
+use ckb_tool::ckb_error::assert_error_eq;
+use ckb_tool::ckb_hash::{blake2b_256, new_blake2b};
+use ckb_tool::ckb_script::ScriptError;
 use ckb_tool::ckb_types::{
     bytes::Bytes,
     core::{Capacity, TransactionBuilder, TransactionView},
@@ -9,9 +12,9 @@ use ckb_tool::ckb_types::{
     prelude::*,
     H256,
 };
-use ckb_tool::ckb_hash::{blake2b_256, new_blake2b};
-use ckb_tool::ckb_error::assert_error_eq;
-use ckb_tool::ckb_script::ScriptError;
+
+use ckb_x64_simulator::RunningSetup;
+use std::collections::HashMap;
 
 use super::entry_tests::CODE_HASH_SECP256K1_BLAKE160;
 use super::entry_tests::TYPE;
@@ -100,7 +103,10 @@ fn build_test_context_with_sender_input(
         .out_point(always_success_out_point)
         .build();
 
-    let mut cheque_lock_args = receiver_always_success_lock_hash.as_bytes().slice(0..20).to_vec();
+    let mut cheque_lock_args = receiver_always_success_lock_hash
+        .as_bytes()
+        .slice(0..20)
+        .to_vec();
     let sender_lock_hash = if is_sender_input_error {
         receiver_always_success_lock_hash
     } else {
@@ -108,33 +114,32 @@ fn build_test_context_with_sender_input(
     };
     cheque_lock_args.extend_from_slice(&sender_lock_hash.as_bytes().slice(0..20).to_vec());
     let cheque_script = context
-            .build_script(&cheque_out_point, Bytes::copy_from_slice(&cheque_lock_args))
-            .expect("script");
-      
+        .build_script(&cheque_out_point, Bytes::copy_from_slice(&cheque_lock_args))
+        .expect("script");
+
     // prepare inputs
     let mut inputs = vec![];
     for index in 0..inputs_token.len() {
         let token = inputs_token.get(index).unwrap();
         let capacity = Capacity::shannons(*token);
         let input_out_point = if index == 0 {
-          context.create_cell(CellOutput::new_builder()
-                .capacity(capacity.pack())
-                .lock(cheque_script.clone())
-                .build(), 
-            token.to_le_bytes().to_vec().into())
+            context.create_cell(
+                CellOutput::new_builder()
+                    .capacity(capacity.pack())
+                    .lock(cheque_script.clone())
+                    .build(),
+                token.to_le_bytes().to_vec().into(),
+            )
         } else {
-          context.create_cell(
-            CellOutput::new_builder()
-                .capacity(capacity.pack())
-                .lock(sender_always_success_lock_script.clone())
-                .build(),
-            token.to_le_bytes().to_vec().into())
+            context.create_cell(
+                CellOutput::new_builder()
+                    .capacity(capacity.pack())
+                    .lock(sender_always_success_lock_script.clone())
+                    .build(),
+                token.to_le_bytes().to_vec().into(),
+            )
         };
-        let input_since = if index == 0 {
-          since
-        } else {
-          0
-        };
+        let input_since = if index == 0 { since } else { 0 };
         let input = CellInput::new_builder()
             .previous_output(input_out_point)
             .since(input_since.pack())
@@ -186,7 +191,7 @@ fn build_test_context_with_sender_signature(
     outputs_token: Vec<u64>,
     since: u64,
 ) -> (Context, TransactionView) {
-  // generate key pair
+    // generate key pair
     let private_key = Generator::random_privkey();
     let public_key = private_key.pubkey().expect("pubkey");
     let sender_lock_args = blake160(&public_key.serialize());
@@ -209,45 +214,46 @@ fn build_test_context_with_sender_signature(
         .build();
 
     let receiver_secp256k1_lock_script = Script::new_builder()
-                                                .code_hash(CODE_HASH_SECP256K1_BLAKE160.pack())
-                                                .args(receiver_lock_args.pack())
-                                                .hash_type(Byte::new(TYPE))
-                                                .build();
-    let receiver_secp256k1_lock_hash = receiver_secp256k1_lock_script.calc_script_hash();  
-
+        .code_hash(CODE_HASH_SECP256K1_BLAKE160.pack())
+        .args(receiver_lock_args.pack())
+        .hash_type(Byte::new(TYPE))
+        .build();
+    let receiver_secp256k1_lock_hash = receiver_secp256k1_lock_script.calc_script_hash();
 
     let sender_secp256k1_lock_script = Script::new_builder()
-                                                .code_hash(CODE_HASH_SECP256K1_BLAKE160.pack())
-                                                .args(sender_lock_args.pack())
-                                                .hash_type(Byte::new(TYPE))
-                                                .build();
+        .code_hash(CODE_HASH_SECP256K1_BLAKE160.pack())
+        .args(sender_lock_args.pack())
+        .hash_type(Byte::new(TYPE))
+        .build();
     let sender_secp256k1_lock_hash = sender_secp256k1_lock_script.calc_script_hash();
-    
+
     let secp256k1_dep = CellDep::new_builder()
         .out_point(secp256k1_out_point)
         .build();
 
-    let mut cheque_lock_args = receiver_secp256k1_lock_hash.as_bytes().slice(0..20).to_vec();
-    cheque_lock_args.extend_from_slice(&sender_secp256k1_lock_hash.as_bytes().slice(0..20).to_vec());
+    let mut cheque_lock_args = receiver_secp256k1_lock_hash
+        .as_bytes()
+        .slice(0..20)
+        .to_vec();
+    cheque_lock_args
+        .extend_from_slice(&sender_secp256k1_lock_hash.as_bytes().slice(0..20).to_vec());
     let cheque_script = context
-            .build_script(&cheque_out_point, Bytes::copy_from_slice(&cheque_lock_args))
-            .expect("script");
-      
+        .build_script(&cheque_out_point, Bytes::copy_from_slice(&cheque_lock_args))
+        .expect("script");
+
     // prepare inputs
     let mut inputs = vec![];
     for index in 0..inputs_token.len() {
         let token = inputs_token.get(index).unwrap();
         let capacity = Capacity::shannons(*token);
-        let input_out_point = context.create_cell(CellOutput::new_builder()
+        let input_out_point = context.create_cell(
+            CellOutput::new_builder()
                 .capacity(capacity.pack())
                 .lock(cheque_script.clone())
-                .build(), 
-            token.to_le_bytes().to_vec().into());
-        let input_since = if index == 0 {
-          since
-        } else {
-          0
-        };
+                .build(),
+            token.to_le_bytes().to_vec().into(),
+        );
+        let input_since = if index == 0 { since } else { 0 };
         let input = CellInput::new_builder()
             .previous_output(input_out_point)
             .since(input_since.pack())
@@ -261,9 +267,9 @@ fn build_test_context_with_sender_signature(
         let token = outputs_token.get(index).unwrap();
         let capacity = Capacity::shannons(*token);
         let output = CellOutput::new_builder()
-                .capacity(capacity.pack())
-                .lock(sender_secp256k1_lock_script.clone())
-                .build();
+            .capacity(capacity.pack())
+            .lock(sender_secp256k1_lock_script.clone())
+            .build();
         outputs.push(output);
     }
 
@@ -273,10 +279,10 @@ fn build_test_context_with_sender_signature(
         .map(|_token| Bytes::from("0x"))
         .collect();
 
-      let mut witnesses = vec![];
-      for _ in 0..inputs.len() {
+    let mut witnesses = vec![];
+    for _ in 0..inputs.len() {
         witnesses.push(Bytes::new())
-      }
+    }
 
     // build transaction
     let tx = TransactionBuilder::default()
@@ -292,7 +298,6 @@ fn build_test_context_with_sender_signature(
     let tx = sign_tx(tx, &private_key);
     (context, tx)
 }
-
 
 #[test]
 fn test_withdraw_with_sender_input() {
@@ -317,10 +322,19 @@ Bytes::from(
         .verify_tx(&tx, MAX_CYCLES)
         .expect("pass verification");
     println!("consume cycles: {}", cycles);
+
+    // dump raw test tx files
+    let setup = RunningSetup {
+        is_lock_script: true,
+        is_output: false,
+        script_index: 0,
+        native_binaries: HashMap::default(),
+    };
+    write_native_setup("test_withdraw_with_sender_input", "ckb-cheque-script-sim", &tx, &context, &setup);
 }
 
 #[test]
-fn test_withdraw_with_no_sender_input() {
+fn test_error_withdraw_with_no_sender_input() {
     let (mut context, tx) = build_test_context_with_sender_input(
   Bytes::from(
             hex::decode("36c329ed630d6ce750712a477543672adab57f4c")
@@ -344,23 +358,30 @@ Bytes::from(
         err,
         ScriptError::ValidationFailure(NO_MATCHED_INPUTS).input_lock_script(script_cell_index)
     );
+
+    // dump raw test tx files
+    let setup = RunningSetup {
+        is_lock_script: true,
+        is_output: false,
+        script_index: 0,
+        native_binaries: HashMap::default(),
+    };
+    write_native_setup("test_error_withdraw_with_no_sender_input", "ckb-cheque-script-sim", &tx, &context, &setup);
 }
 
 #[test]
-fn test_withdraw_with_sender_input_signature_error() {
+fn test_error_withdraw_with_sender_input_signature() {
     let (mut context, tx) = build_test_context_with_sender_input(
-  Bytes::from(
-            hex::decode("36c329ed630d6ce750712a477543672adab57f4c")
-                .unwrap()),
-Bytes::from(
-            hex::decode("f43cc005be4edf45c829363d54799ac4f7aff5a5")
-                .unwrap()),
+        Bytes::from(hex::decode("36c329ed630d6ce750712a477543672adab57f4c").unwrap()),
+        Bytes::from(hex::decode("f43cc005be4edf45c829363d54799ac4f7aff5a5").unwrap()),
         vec![162_0000_0000, 200_0000_0000],
         vec![200_0000_0000, 162_0000_0000],
         Bytes::from(
-            hex::decode("5500000010000000550000005500000041000000b69c542c0ee6c4b6d8350514d876ea7d").unwrap()),
-            0xA000000000000006,
-            false,
+            hex::decode("5500000010000000550000005500000041000000b69c542c0ee6c4b6d8350514d876ea7d")
+                .unwrap(),
+        ),
+        0xA000000000000006,
+        false,
     );
     let tx = context.complete_tx(tx);
 
@@ -369,12 +390,13 @@ Bytes::from(
     let script_cell_index = 0;
     assert_error_eq!(
         err,
-        ScriptError::ValidationFailure(WITNESS_SIGNATURE_WRONG).input_lock_script(script_cell_index)
+        ScriptError::ValidationFailure(WITNESS_SIGNATURE_WRONG)
+            .input_lock_script(script_cell_index)
     );
 }
 
 #[test]
-fn test_withdraw_with_sender_input_since_error() {
+fn test_error_withdraw_with_sender_input_since() {
     let (mut context, tx) = build_test_context_with_sender_input(
   Bytes::from(
             hex::decode("36c329ed630d6ce750712a477543672adab57f4c")
@@ -395,17 +417,24 @@ Bytes::from(
     let script_cell_index = 0;
     assert_error_eq!(
         err,
-        ScriptError::ValidationFailure(WITHDRAW_CHEQUE_INPUT_SINCE_ERROR).input_lock_script(script_cell_index)
+        ScriptError::ValidationFailure(WITHDRAW_CHEQUE_INPUT_SINCE_ERROR)
+            .input_lock_script(script_cell_index)
     );
-}
 
+    // dump raw test tx files
+    let setup = RunningSetup {
+        is_lock_script: true,
+        is_output: false,
+        script_index: 0,
+        native_binaries: HashMap::default(),
+    };
+    write_native_setup("test_error_withdraw_with_sender_input_since", "ckb-cheque-script-sim", &tx, &context, &setup);
+}
 
 #[test]
 fn test_withdraw_with_sender_signature() {
     let (mut context, tx) = build_test_context_with_sender_signature(
-Bytes::from(
-            hex::decode("f43cc005be4edf45c829363d54799ac4f7aff5a5")
-                .unwrap()),
+        Bytes::from(hex::decode("f43cc005be4edf45c829363d54799ac4f7aff5a5").unwrap()),
         vec![162_0000_0000],
         vec![162_0000_0000],
         0xA000000000000006,
@@ -419,13 +448,10 @@ Bytes::from(
     println!("consume cycles: {}", cycles);
 }
 
-
 #[test]
-fn test_withdraw_with_sender_signature_since_error() {
+fn test_error_withdraw_with_sender_signature_since() {
     let (mut context, tx) = build_test_context_with_sender_signature(
-Bytes::from(
-            hex::decode("f43cc005be4edf45c829363d54799ac4f7aff5a5")
-                .unwrap()),
+        Bytes::from(hex::decode("f43cc005be4edf45c829363d54799ac4f7aff5a5").unwrap()),
         vec![162_0000_0000],
         vec![162_0000_0000],
         100000,
@@ -437,7 +463,7 @@ Bytes::from(
     let script_cell_index = 0;
     assert_error_eq!(
         err,
-        ScriptError::ValidationFailure(WITHDRAW_CHEQUE_INPUT_SINCE_ERROR).input_lock_script(script_cell_index)
+        ScriptError::ValidationFailure(WITHDRAW_CHEQUE_INPUT_SINCE_ERROR)
+            .input_lock_script(script_cell_index)
     );
 }
-

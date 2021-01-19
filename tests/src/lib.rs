@@ -1,7 +1,10 @@
+#[macro_use]
+extern crate lazy_static;
+
 use ckb_tool::ckb_types::bytes::Bytes;
 use std::env;
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
 #[cfg(test)]
@@ -12,6 +15,20 @@ mod claim_tests;
 
 #[cfg(test)]
 mod withdraw_tests;
+
+mod native_simulator;
+
+lazy_static! {
+    static ref LOADER: Loader = Loader::default();
+    static ref TX_FOLDER: PathBuf = {
+        let path = LOADER.path("dumped_tests");
+        if Path::new(&path).exists() {
+            fs::remove_dir_all(&path).expect("remove old dir");
+        }
+        fs::create_dir_all(&path).expect("create test dir");
+        path
+    };
+}
 
 const TEST_ENV_VAR: &str = "CAPSULE_TEST_ENV";
 
@@ -59,9 +76,13 @@ impl Loader {
         Loader(base_path)
     }
 
-    pub fn load_binary(&self, name: &str) -> Bytes {
+    pub fn path(&self, name: &str) -> PathBuf {
         let mut path = self.0.clone();
         path.push(name);
-        fs::read(path).expect("binary").into()
+        path
+    }
+
+    pub fn load_binary(&self, name: &str) -> Bytes {
+        fs::read(self.path(name)).expect("binary").into()
     }
 }

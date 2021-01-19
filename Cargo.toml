@@ -1,5 +1,5 @@
 [workspace]
-members = ["tests", "contracts/ckb-cheque-script"]
+members = ["tests", "contracts/ckb-cheque-script", "natives"]
 
 [profile.release]
 overflow-checks = true
