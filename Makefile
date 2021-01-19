@@ -9,7 +9,7 @@ simulators:
 
 test: all simulators
 	cargo test -p tests
-	scripts/run_sim_tests.sh $(ENVIRONMENT)
+	./scripts/run_sim_tests.sh $(ENVIRONMENT)
 
 coverage: test
 	zip -0 build/$(ENVIRONMENT)/ccov.zip `find . \( -name "ckb-cheque-script-sim*.gc*" \) -print`
