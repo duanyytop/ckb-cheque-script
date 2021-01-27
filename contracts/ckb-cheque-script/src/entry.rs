@@ -29,9 +29,9 @@ pub fn main() -> Result<(), Error> {
     if cheque_witness_is_none {
         // Check if the inputs contain the same input as receiver lock hash or sender lock hash
         if helper::has_input_by_lock_hash(&receiver_lock_hash) {
-            claim::validate(&sender_lock_hash, &receiver_lock_hash, true)
+            claim::validate(&sender_lock_hash, &receiver_lock_hash, cheque_witness_is_none)
         } else if helper::has_input_by_lock_hash(&sender_lock_hash) {
-            withdraw::validate(&sender_lock_hash, true)
+            withdraw::validate(&sender_lock_hash, cheque_witness_is_none)
         } else {
             Err(Error::NoMatchedInputs)
         }
@@ -42,9 +42,9 @@ pub fn main() -> Result<(), Error> {
         match helper::validate_blake2b_sighash_all(&lib, &receiver_lock_hash, &sender_lock_hash) {
             Ok(is_receiver) => {
                 if is_receiver {
-                    claim::validate(&sender_lock_hash, &receiver_lock_hash, false)
+                    claim::validate(&sender_lock_hash, &receiver_lock_hash, cheque_witness_is_none)
                 } else {
-                    withdraw::validate(&sender_lock_hash, false)
+                    withdraw::validate(&sender_lock_hash, cheque_witness_is_none)
                 }
             }
             Err(_) => Err(Error::NoMatchedSignature),
