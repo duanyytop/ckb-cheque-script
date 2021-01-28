@@ -1,3 +1,20 @@
+/* Cheque lock script
+ *
+ * Cheque cell can be unlocked by two ways:
+ *
+ * 1. Receiver claimed
+ *   1.a. The receiver signs the cheque cell with the secp256k1_blake160_sighash_all algorithm 
+ *      and the first 20 byte of the receiver lock hash must be equal to receiver_lock_hash[0..20] of the cheque cell lock args.
+ *   1.b. The receiver provides an official secp256k1_blake160 input cell whose the first 20 byte of lock script hash 
+ *      must be equal to receiver_lock_hash[0..20] of the cheque cell lock args.
+ * 2. Sender withdrew
+ * If the cheque cell created by the sender has been on the chain for longer than the lock-up period(6 epochs) 
+ * and has not been claimed by the receiver, the sender can withdraw with two ways:
+ *   2.a. The sender signs the cheque cell with the secp256k1_blake160_sighash_all algorithm 
+ *      and the first 20 byte of the sender lock hash must be equal to sender_lock_hash[0..20] of the cheque cell lock args.
+ *   2.b. The sender provides an official secp256k1_blake160 input cell whose the first 20 byte of lock script hash 
+ *      must be equal to sender_lock_hash[0..20] of the cheque cell lock args.
+ */
 use core::result::Result;
 
 use ckb_lib_secp256k1::LibSecp256k1;
@@ -14,6 +31,9 @@ use super::helper;
 use super::withdraw;
 
 pub fn main() -> Result<(), Error> {
+    // The stack will be reserved by code
+    let mut context = unsafe { CKBDLContext::<[u8; 128 * 1024]>::new() };
+
     let script = load_script()?;
     let args: Bytes = script.args().unpack();
     if args.len() != 40 {
@@ -37,7 +57,6 @@ pub fn main() -> Result<(), Error> {
         }
     } else {
         // Validate the signatures of receiver and sender
-        let mut context = unsafe { CKBDLContext::<[u8; 128 * 1024]>::new() };
         let lib = LibSecp256k1::load(&mut context);
         match helper::validate_blake2b_sighash_all(&lib, &receiver_lock_hash, &sender_lock_hash) {
             Ok(is_receiver) => {
