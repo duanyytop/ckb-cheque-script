@@ -36,24 +36,16 @@ fn check_sender_cells_capacity_same(
     cheque_lock_hash: &[u8; 20],
 ) -> bool {
     let sender_inputs = helper::filter_cells_by_lock_hash(sender_lock_hash, Source::Input);
-    let sum_sender_inputs_capacity = match sender_inputs {
-        Some(inputs) => helper::calc_cells_capacity_sum(inputs),
-        None => 0,
-    };
+    let sum_sender_inputs_capacity = helper::calc_cells_capacity_sum(sender_inputs);
 
     let sender_outputs = helper::filter_cells_by_lock_hash(sender_lock_hash, Source::Output);
-    let sum_sender_outputs_capacity = match sender_outputs {
-        Some(outputs) => helper::calc_cells_capacity_sum(outputs),
-        None => 0,
-    };
+    let sum_sender_outputs_capacity = helper::calc_cells_capacity_sum(sender_outputs);
+    let diff_capacity_of_sender_outputs_and_inputs = sum_sender_outputs_capacity - sum_sender_inputs_capacity;
 
     let cheque_inputs = helper::filter_cells_by_lock_hash(cheque_lock_hash, Source::Input);
-    let sum_cheque_inputs_capacity = match cheque_inputs {
-        Some(inputs) => helper::calc_cells_capacity_sum(inputs),
-        None => 0,
-    };
+    let sum_cheque_inputs_capacity = helper::calc_cells_capacity_sum(cheque_inputs);
 
-    sum_cheque_inputs_capacity == sum_sender_outputs_capacity - sum_sender_inputs_capacity
+    sum_cheque_inputs_capacity == diff_capacity_of_sender_outputs_and_inputs
 }
 
 fn check_cheque_inputs_since_not_zero() -> bool {

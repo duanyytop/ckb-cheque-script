@@ -19,15 +19,10 @@ pub fn position_input_by_lock_hash(lock_hash: &[u8; 20]) -> Option<usize> {
         .position(|cell| &hash::blake2b_160(cell.lock().as_slice()) == lock_hash)
 }
 
-pub fn filter_cells_by_lock_hash(lock_hash: &[u8; 20], source: Source) -> Option<Vec<CellOutput>> {
-    let cells = QueryIter::new(load_cell, source)
+pub fn filter_cells_by_lock_hash(lock_hash: &[u8; 20], source: Source) -> Vec<CellOutput> {
+    QueryIter::new(load_cell, source)
         .filter(|cell| &hash::blake2b_160(cell.lock().as_slice()) == lock_hash)
-        .collect::<Vec<_>>();
-    if cells.len() == 0 {
-        None
-    } else {
-        Some(cells)
-    }
+        .collect::<Vec<_>>()
 }
 
 pub fn load_group_inputs_since() -> Vec<u64> {
