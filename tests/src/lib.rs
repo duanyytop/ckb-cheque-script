@@ -7,6 +7,8 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
+mod helper;
+
 #[cfg(test)]
 mod entry_tests;
 
