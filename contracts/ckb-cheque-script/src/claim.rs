@@ -17,7 +17,7 @@ pub fn validate(
         return Err(Error::ClaimChequeInputSinceNotZero);
     }
 
-    if !check_sender_cells_capacity_same(sender_lock_hash, &cheque_lock_hash) {
+    if !check_sender_cells_capacity_same(sender_lock_hash, &cheque_lock_hash)? {
         return Err(Error::SenderCapacityNotSame);
     }
 
@@ -34,19 +34,15 @@ pub fn validate(
 fn check_sender_cells_capacity_same(
     sender_lock_hash: &[u8; 20],
     cheque_lock_hash: &[u8; 20],
-) -> bool {
-    let sender_inputs = helper::filter_cells_by_lock_hash(sender_lock_hash, Source::Input);
-    let sum_sender_inputs_capacity = helper::calc_cells_capacity_sum(sender_inputs);
+) -> Result<bool, Error> {
+    let sum_sender_inputs_capacity = helper::sum_cells_capacity_of_lock_hash(sender_lock_hash, Source::Input)?;
+    let sum_sender_outputs_capacity = helper::sum_cells_capacity_of_lock_hash(sender_lock_hash, Source::Output)?;
+    let sum_cheque_inputs_capacity = helper::sum_cells_capacity_of_lock_hash(cheque_lock_hash, Source::Input)?;
 
-    let sender_outputs = helper::filter_cells_by_lock_hash(sender_lock_hash, Source::Output);
-    let sum_sender_outputs_capacity = helper::calc_cells_capacity_sum(sender_outputs);
-    
-    let diff_capacity_of_sender_outputs_and_inputs = sum_sender_outputs_capacity - sum_sender_inputs_capacity;
-
-    let cheque_inputs = helper::filter_cells_by_lock_hash(cheque_lock_hash, Source::Input);
-    let sum_cheque_inputs_capacity = helper::calc_cells_capacity_sum(cheque_inputs);
-
-    sum_cheque_inputs_capacity == diff_capacity_of_sender_outputs_and_inputs
+    match sum_sender_inputs_capacity.checked_add(sum_cheque_inputs_capacity) {
+        Some(sum_inputs_capacity) => Ok(sum_inputs_capacity == sum_sender_outputs_capacity),
+        None => Err(Error::Encoding),
+    }
 }
 
 fn check_cheque_inputs_since_not_zero() -> bool {

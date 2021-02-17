@@ -45,7 +45,7 @@ pub fn main() -> Result<(), Error> {
     receiver_lock_hash.copy_from_slice(&args[0..20]);
     sender_lock_hash.copy_from_slice(&args[20..]);
 
-    let cheque_witness_is_none = cheque_cell_witness_is_none()?;
+    let cheque_witness_is_none = check_cheque_cell_witness_is_none()?;
     if cheque_witness_is_none {
         // Check if the inputs contain the same input as receiver lock hash or sender lock hash
         if helper::has_input_by_lock_hash(&receiver_lock_hash) {
@@ -71,7 +71,7 @@ pub fn main() -> Result<(), Error> {
     }
 }
 
-fn cheque_cell_witness_is_none() -> Result<bool, Error> {
+fn check_cheque_cell_witness_is_none() -> Result<bool, Error> {
     match load_witness_args(0, Source::GroupInput) {
         Ok(witness_args) => Ok(witness_args.lock().to_opt().is_none()),
         Err(_) => Ok(true),
