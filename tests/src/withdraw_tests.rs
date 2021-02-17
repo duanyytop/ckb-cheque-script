@@ -47,9 +47,14 @@ fn build_test_context_with_sender_input(
         .build_script(&always_success_out_point, sender_lock_args)
         .expect("script");
     let sender_always_success_lock_hash = sender_always_success_lock_script.calc_script_hash();
-    let always_success_lock_script_dep = CellDep::new_builder().out_point(always_success_out_point).build();
+    let always_success_lock_script_dep = CellDep::new_builder()
+        .out_point(always_success_out_point)
+        .build();
 
-    let mut cheque_lock_args = receiver_always_success_lock_hash.as_bytes().slice(0..20).to_vec();
+    let mut cheque_lock_args = receiver_always_success_lock_hash
+        .as_bytes()
+        .slice(0..20)
+        .to_vec();
     let sender_lock_hash = if is_sender_input_error {
         receiver_always_success_lock_hash
     } else {
@@ -103,7 +108,10 @@ fn build_test_context_with_sender_input(
     }
 
     let cheque_script_dep = CellDep::new_builder().out_point(cheque_out_point).build();
-    let outputs_data: Vec<_> = outputs_token.iter().map(|_token| Bytes::from("0x")).collect();
+    let outputs_data: Vec<_> = outputs_token
+        .iter()
+        .map(|_token| Bytes::from("0x"))
+        .collect();
     let mut witnesses = vec![];
     witnesses.push(Bytes::new());
     witnesses.push(signature);
@@ -141,14 +149,17 @@ fn build_test_context_with_sender_signature(
     let cheque_bin: Bytes = Loader::default().load_binary("ckb-cheque-script");
     let cheque_out_point = context.deploy_cell(cheque_bin);
 
-    let secp256k1_bin: Bytes = fs::read("../ckb-miscellaneous-scripts/build/secp256k1_blake2b_sighash_all_dual")
-        .expect("load secp256k1")
-        .into();
+    let secp256k1_bin: Bytes =
+        fs::read("../ckb-miscellaneous-scripts/build/secp256k1_blake2b_sighash_all_dual")
+            .expect("load secp256k1")
+            .into();
     let secp256k1_out_point = context.deploy_cell(secp256k1_bin);
 
     let secp256k1_data_bin = BUNDLED_CELL.get("specs/cells/secp256k1_data").unwrap();
     let secp256k1_data_out_point = context.deploy_cell(secp256k1_data_bin.to_vec().into());
-    let secp256k1_data_dep = CellDep::new_builder().out_point(secp256k1_data_out_point).build();
+    let secp256k1_data_dep = CellDep::new_builder()
+        .out_point(secp256k1_data_out_point)
+        .build();
 
     let receiver_secp256k1_lock_script = Script::new_builder()
         .code_hash(CODE_HASH_SECP256K1_BLAKE160.pack())
@@ -164,10 +175,16 @@ fn build_test_context_with_sender_signature(
         .build();
     let sender_secp256k1_lock_hash = sender_secp256k1_lock_script.calc_script_hash();
 
-    let secp256k1_dep = CellDep::new_builder().out_point(secp256k1_out_point).build();
+    let secp256k1_dep = CellDep::new_builder()
+        .out_point(secp256k1_out_point)
+        .build();
 
-    let mut cheque_lock_args = receiver_secp256k1_lock_hash.as_bytes().slice(0..20).to_vec();
-    cheque_lock_args.extend_from_slice(&sender_secp256k1_lock_hash.as_bytes().slice(0..20).to_vec());
+    let mut cheque_lock_args = receiver_secp256k1_lock_hash
+        .as_bytes()
+        .slice(0..20)
+        .to_vec();
+    cheque_lock_args
+        .extend_from_slice(&sender_secp256k1_lock_hash.as_bytes().slice(0..20).to_vec());
     let cheque_script = context
         .build_script(&cheque_out_point, Bytes::copy_from_slice(&cheque_lock_args))
         .expect("script");
@@ -205,7 +222,10 @@ fn build_test_context_with_sender_signature(
     }
 
     let cheque_script_dep = CellDep::new_builder().out_point(cheque_out_point).build();
-    let outputs_data: Vec<_> = outputs_token.iter().map(|_token| Bytes::from("0x")).collect();
+    let outputs_data: Vec<_> = outputs_token
+        .iter()
+        .map(|_token| Bytes::from("0x"))
+        .collect();
 
     let mut witnesses = vec![];
     for _ in 0..inputs.len() {
@@ -246,7 +266,9 @@ Bytes::from(
     let tx = context.complete_tx(tx);
 
     // run
-    let cycles = context.verify_tx(&tx, MAX_CYCLES).expect("pass verification");
+    let cycles = context
+        .verify_tx(&tx, MAX_CYCLES)
+        .expect("pass verification");
     println!("consume cycles: {}", cycles);
 
     // dump raw test tx files
@@ -314,7 +336,10 @@ fn test_error_withdraw_with_sender_input_signature() {
         Bytes::from(hex::decode("f43cc005be4edf45c829363d54799ac4f7aff5a5").unwrap()),
         vec![162_0000_0000, 200_0000_0000],
         vec![200_0000_0000, 162_0000_0000],
-        Bytes::from(hex::decode("5500000010000000550000005500000041000000b69c542c0ee6c4b6d8350514d876ea7d").unwrap()),
+        Bytes::from(
+            hex::decode("5500000010000000550000005500000041000000b69c542c0ee6c4b6d8350514d876ea7d")
+                .unwrap(),
+        ),
         0xA000000000000006,
         false,
     );
@@ -325,7 +350,8 @@ fn test_error_withdraw_with_sender_input_signature() {
     let script_cell_index = 0;
     assert_error_eq!(
         err,
-        ScriptError::ValidationFailure(WITNESS_SIGNATURE_WRONG).input_lock_script(script_cell_index)
+        ScriptError::ValidationFailure(WITNESS_SIGNATURE_WRONG)
+            .input_lock_script(script_cell_index)
     );
 }
 
@@ -351,7 +377,8 @@ Bytes::from(
     let script_cell_index = 0;
     assert_error_eq!(
         err,
-        ScriptError::ValidationFailure(WITHDRAW_CHEQUE_INPUT_SINCE_ERROR).input_lock_script(script_cell_index)
+        ScriptError::ValidationFailure(WITHDRAW_CHEQUE_INPUT_SINCE_ERROR)
+            .input_lock_script(script_cell_index)
     );
 
     // dump raw test tx files
@@ -381,7 +408,9 @@ fn test_withdraw_with_sender_signature() {
     let tx = context.complete_tx(tx);
 
     // run
-    let cycles = context.verify_tx(&tx, MAX_CYCLES).expect("pass verification");
+    let cycles = context
+        .verify_tx(&tx, MAX_CYCLES)
+        .expect("pass verification");
     println!("consume cycles: {}", cycles);
 }
 
@@ -400,6 +429,7 @@ fn test_error_withdraw_with_sender_signature_since() {
     let script_cell_index = 0;
     assert_error_eq!(
         err,
-        ScriptError::ValidationFailure(WITHDRAW_CHEQUE_INPUT_SINCE_ERROR).input_lock_script(script_cell_index)
+        ScriptError::ValidationFailure(WITHDRAW_CHEQUE_INPUT_SINCE_ERROR)
+            .input_lock_script(script_cell_index)
     );
 }

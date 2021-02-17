@@ -41,7 +41,10 @@ fn build_test_context(
 
     // build lock script
     let receiver_always_success_lock_script = context
-        .build_script(&always_success_out_point, Bytes::copy_from_slice(&receiver_lock_args))
+        .build_script(
+            &always_success_out_point,
+            Bytes::copy_from_slice(&receiver_lock_args),
+        )
         .expect("script");
     let receiver_always_success_lock_hash = receiver_always_success_lock_script.calc_script_hash();
 
@@ -63,7 +66,12 @@ fn build_test_context(
             .slice(0..20)
             .to_vec()
     };
-    cheque_lock_args.extend_from_slice(&sender_always_success_lock_hash.as_bytes().slice(0..20).to_vec());
+    cheque_lock_args.extend_from_slice(
+        &sender_always_success_lock_hash
+            .as_bytes()
+            .slice(0..20)
+            .to_vec(),
+    );
     let cheque_script = context
         .build_script(&cheque_out_point, Bytes::copy_from_slice(&cheque_lock_args))
         .expect("script");
@@ -73,7 +81,9 @@ fn build_test_context(
         None => None,
     };
 
-    let always_success_lock_script_dep = CellDep::new_builder().out_point(always_success_out_point).build();
+    let always_success_lock_script_dep = CellDep::new_builder()
+        .out_point(always_success_out_point)
+        .build();
 
     let lock_script = if another_lock_script.is_none() {
         receiver_always_success_lock_script.clone()
@@ -103,7 +113,9 @@ fn build_test_context(
                 token.to_le_bytes().to_vec().into(),
             )
         };
-        let input = CellInput::new_builder().previous_output(input_out_point).build();
+        let input = CellInput::new_builder()
+            .previous_output(input_out_point)
+            .build();
         inputs.push(input);
     }
 
@@ -127,7 +139,10 @@ fn build_test_context(
     }
 
     let cheque_script_dep = CellDep::new_builder().out_point(cheque_out_point).build();
-    let outputs_data: Vec<_> = outputs_token.iter().map(|_token| Bytes::from("0x")).collect();
+    let outputs_data: Vec<_> = outputs_token
+        .iter()
+        .map(|_token| Bytes::from("0x"))
+        .collect();
 
     let mut witnesses = vec![];
     for _ in 0..inputs.len() - 1 {
@@ -164,14 +179,17 @@ fn build_test_context_with_signature(
     // deploy always_success script
     let always_success_out_point = context.deploy_cell(ALWAYS_SUCCESS.clone());
 
-    let secp256k1_bin: Bytes = fs::read("../ckb-miscellaneous-scripts/build/secp256k1_blake2b_sighash_all_dual")
-        .expect("load secp256k1")
-        .into();
+    let secp256k1_bin: Bytes =
+        fs::read("../ckb-miscellaneous-scripts/build/secp256k1_blake2b_sighash_all_dual")
+            .expect("load secp256k1")
+            .into();
     let secp256k1_out_point = context.deploy_cell(secp256k1_bin);
 
     let secp256k1_data_bin = BUNDLED_CELL.get("specs/cells/secp256k1_data").unwrap();
     let secp256k1_data_out_point = context.deploy_cell(secp256k1_data_bin.to_vec().into());
-    let secp256k1_data_dep = CellDep::new_builder().out_point(secp256k1_data_out_point).build();
+    let secp256k1_data_dep = CellDep::new_builder()
+        .out_point(secp256k1_data_out_point)
+        .build();
     // build lock script
     let receiver_secp256k1_lock_script = Script::new_builder()
         .code_hash(CODE_HASH_SECP256K1_BLAKE160.pack())
@@ -181,7 +199,10 @@ fn build_test_context_with_signature(
     let receiver_secp256k1_lock_hash = receiver_secp256k1_lock_script.calc_script_hash();
 
     let receiver_always_success_lock_script = context
-        .build_script(&always_success_out_point, Bytes::copy_from_slice(&receiver_lock_args))
+        .build_script(
+            &always_success_out_point,
+            Bytes::copy_from_slice(&receiver_lock_args),
+        )
         .expect("script");
 
     let sender_secp256k1_lock_script = Script::new_builder()
@@ -191,14 +212,23 @@ fn build_test_context_with_signature(
         .build();
     let sender_secp256k1_lock_hash = sender_secp256k1_lock_script.calc_script_hash();
 
-    let mut cheque_lock_args = receiver_secp256k1_lock_hash.clone().as_bytes().slice(0..20).to_vec();
-    cheque_lock_args.extend_from_slice(&sender_secp256k1_lock_hash.as_bytes().slice(0..20).to_vec());
+    let mut cheque_lock_args = receiver_secp256k1_lock_hash
+        .clone()
+        .as_bytes()
+        .slice(0..20)
+        .to_vec();
+    cheque_lock_args
+        .extend_from_slice(&sender_secp256k1_lock_hash.as_bytes().slice(0..20).to_vec());
     let cheque_script = context
         .build_script(&cheque_out_point, Bytes::copy_from_slice(&cheque_lock_args))
         .expect("script");
 
-    let secp256k1_dep = CellDep::new_builder().out_point(secp256k1_out_point).build();
-    let always_success_lock_script_dep = CellDep::new_builder().out_point(always_success_out_point).build();
+    let secp256k1_dep = CellDep::new_builder()
+        .out_point(secp256k1_out_point)
+        .build();
+    let always_success_lock_script_dep = CellDep::new_builder()
+        .out_point(always_success_out_point)
+        .build();
 
     // prepare inputs
     let mut inputs = vec![];
@@ -222,7 +252,9 @@ fn build_test_context_with_signature(
                 token.to_le_bytes().to_vec().into(),
             )
         };
-        let input = CellInput::new_builder().previous_output(input_out_point).build();
+        let input = CellInput::new_builder()
+            .previous_output(input_out_point)
+            .build();
         inputs.push(input);
     }
 
@@ -246,7 +278,10 @@ fn build_test_context_with_signature(
     }
 
     let cheque_script_dep = CellDep::new_builder().out_point(cheque_out_point).build();
-    let outputs_data: Vec<_> = outputs_token.iter().map(|_token| Bytes::from("0x")).collect();
+    let outputs_data: Vec<_> = outputs_token
+        .iter()
+        .map(|_token| Bytes::from("0x"))
+        .collect();
 
     let mut witnesses = vec![];
     for _ in 0..inputs.len() {

@@ -35,9 +35,12 @@ fn check_sender_cells_capacity_same(
     sender_lock_hash: &[u8; 20],
     cheque_lock_hash: &[u8; 20],
 ) -> Result<bool, Error> {
-    let sum_sender_inputs_capacity = helper::sum_cells_capacity_of_lock_hash(sender_lock_hash, Source::Input)?;
-    let sum_sender_outputs_capacity = helper::sum_cells_capacity_of_lock_hash(sender_lock_hash, Source::Output)?;
-    let sum_cheque_inputs_capacity = helper::sum_cells_capacity_of_lock_hash(cheque_lock_hash, Source::Input)?;
+    let sum_sender_inputs_capacity =
+        helper::sum_cells_capacity_of_lock_hash(sender_lock_hash, Source::Input)?;
+    let sum_sender_outputs_capacity =
+        helper::sum_cells_capacity_of_lock_hash(sender_lock_hash, Source::Output)?;
+    let sum_cheque_inputs_capacity =
+        helper::sum_cells_capacity_of_lock_hash(cheque_lock_hash, Source::Input)?;
 
     match sum_sender_inputs_capacity.checked_add(sum_cheque_inputs_capacity) {
         Some(sum_inputs_capacity) => Ok(sum_inputs_capacity == sum_sender_outputs_capacity),

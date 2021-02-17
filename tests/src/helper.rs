@@ -13,8 +13,8 @@ pub const TYPE: u8 = 1;
 
 #[allow(dead_code)]
 pub const CODE_HASH_SECP256K1_BLAKE160: [u8; 32] = [
-    155, 215, 224, 111, 62, 207, 75, 224, 242, 252, 210, 24, 139, 35, 241, 185, 252, 200, 142, 93, 75, 101, 168, 99,
-    123, 23, 114, 59, 189, 163, 204, 232,
+    155, 215, 224, 111, 62, 207, 75, 224, 242, 252, 210, 24, 139, 35, 241, 185, 252, 200, 142, 93,
+    75, 101, 168, 99, 123, 23, 114, 59, 189, 163, 204, 232,
 ];
 
 #[allow(dead_code)]
@@ -41,7 +41,11 @@ pub fn sign_tx(tx: TransactionView, key: &Privkey) -> TransactionView {
         buf.resize(SIGNATURE_SIZE, 0);
         buf.into()
     };
-    let witness_for_digest = witness.clone().as_builder().lock(Some(zero_lock).pack()).build();
+    let witness_for_digest = witness
+        .clone()
+        .as_builder()
+        .lock(Some(zero_lock).pack())
+        .build();
     let witness_len = witness_for_digest.as_bytes().len() as u64;
     blake2b.update(&witness_len.to_le_bytes());
     blake2b.update(&witness_for_digest.as_bytes());
@@ -59,5 +63,7 @@ pub fn sign_tx(tx: TransactionView, key: &Privkey) -> TransactionView {
     for i in 1..witnesses_len {
         signed_witnesses.push(tx.witnesses().get(i).unwrap());
     }
-    tx.as_advanced_builder().set_witnesses(signed_witnesses).build()
+    tx.as_advanced_builder()
+        .set_witnesses(signed_witnesses)
+        .build()
 }
