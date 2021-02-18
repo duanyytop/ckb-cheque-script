@@ -3,9 +3,7 @@ use ckb_standalone_debugger::transaction::{
     MockCellDep, MockInfo, MockInput, MockTransaction, ReprMockTransaction,
 };
 use ckb_testtool::context::Context;
-use ckb_tool::ckb_types::{
-    core::{TransactionView, DepType},
-};
+use ckb_tool::ckb_types::core::{DepType, TransactionView};
 
 use ckb_x64_simulator::RunningSetup;
 use serde_json::to_string_pretty;
@@ -54,8 +52,8 @@ fn build_mock_transaction(tx: &TransactionView, context: &Context) -> MockTransa
         })
         .collect();
     let mock_info = MockInfo {
-        inputs: mock_inputs,
-        cell_deps: mock_cell_deps,
+        inputs:      mock_inputs,
+        cell_deps:   mock_cell_deps,
         header_deps: vec![],
     };
     MockTransaction {

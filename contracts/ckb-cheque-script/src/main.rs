@@ -11,12 +11,12 @@
 #![feature(panic_info_message)]
 
 // define modules
+mod claim;
 mod entry;
 mod error;
-mod claim;
-mod withdraw;
 mod hash;
 mod helper;
+mod withdraw;
 
 use ckb_std::default_alloc;
 

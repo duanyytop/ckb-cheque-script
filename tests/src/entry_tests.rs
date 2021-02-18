@@ -1,75 +1,27 @@
-use super::{*, native_simulator::write_native_setup};
+use super::{native_simulator::write_native_setup, *};
 use ckb_system_scripts::BUNDLED_CELL;
 use ckb_testtool::{builtin::ALWAYS_SUCCESS, context::Context};
-use ckb_tool::ckb_crypto::secp::{Generator, Privkey};
+use ckb_tool::ckb_crypto::secp::Generator;
 use ckb_tool::ckb_error::assert_error_eq;
-use ckb_tool::ckb_hash::new_blake2b;
 use ckb_tool::ckb_script::ScriptError;
 use ckb_tool::ckb_types::{
     bytes::Bytes,
     core::{Capacity, TransactionBuilder, TransactionView},
-    packed::{self, *},
+    packed::*,
     prelude::*,
-    H256,
 };
 
 use ckb_x64_simulator::RunningSetup;
 use std::collections::HashMap;
 use std::fs;
 
-pub const TYPE: u8 = 1;
-pub const CODE_HASH_SECP256K1_BLAKE160: [u8; 32] = [
-    155, 215, 224, 111, 62, 207, 75, 224, 242, 252, 210, 24, 139, 35, 241, 185, 252, 200, 142, 93,
-    75, 101, 168, 99, 123, 23, 114, 59, 189, 163, 204, 232,
-];
+use super::helper::{sign_tx, CODE_HASH_SECP256K1_BLAKE160, TYPE};
 
 const MAX_CYCLES: u64 = 10_000_000;
 
 const INVALID_ARGUMENT: i8 = 5;
 const NO_MATCHED_INPUTS: i8 = 6;
 const NO_MATCHED_SIGNATURE: i8 = 13;
-
-fn sign_tx(tx: TransactionView, key: &Privkey) -> TransactionView {
-    const SIGNATURE_SIZE: usize = 65;
-    let witnesses_len = tx.witnesses().len();
-    let tx_hash = tx.hash();
-    let mut signed_witnesses: Vec<packed::Bytes> = Vec::new();
-    let mut blake2b = new_blake2b();
-    let mut message = [0u8; 32];
-    blake2b.update(&tx_hash.raw_data());
-    // digest the first witness
-    let witness = WitnessArgs::default();
-    let zero_lock: Bytes = {
-        let mut buf = Vec::new();
-        buf.resize(SIGNATURE_SIZE, 0);
-        buf.into()
-    };
-    let witness_for_digest = witness
-        .clone()
-        .as_builder()
-        .lock(Some(zero_lock).pack())
-        .build();
-    let witness_len = witness_for_digest.as_bytes().len() as u64;
-    blake2b.update(&witness_len.to_le_bytes());
-    blake2b.update(&witness_for_digest.as_bytes());
-    blake2b.finalize(&mut message);
-    let message = H256::from(message);
-    let sig = key.sign_recoverable(&message).expect("sign");
-    signed_witnesses.push(
-        witness
-            .as_builder()
-            .lock(Some(Bytes::from(sig.serialize())).pack())
-            .build()
-            .as_bytes()
-            .pack(),
-    );
-    for i in 1..witnesses_len {
-        signed_witnesses.push(tx.witnesses().get(i).unwrap());
-    }
-    tx.as_advanced_builder()
-        .set_witnesses(signed_witnesses)
-        .build()
-}
 
 fn build_test_context(
     sender_lock_args: Bytes,
@@ -373,12 +325,18 @@ fn test_error_cheque_with_invalid_args() {
 
     // dump raw test tx files
     let setup = RunningSetup {
-        is_lock_script: true,
-        is_output: false,
-        script_index: 0,
+        is_lock_script:  true,
+        is_output:       false,
+        script_index:    0,
         native_binaries: HashMap::default(),
     };
-    write_native_setup("test_error_cheque_with_invalid_args", "ckb-cheque-script-sim", &tx, &context, &setup);
+    write_native_setup(
+        "test_error_cheque_with_invalid_args",
+        "ckb-cheque-script-sim",
+        &tx,
+        &context,
+        &setup,
+    );
 }
 
 #[test]
@@ -404,12 +362,18 @@ fn test_error_claim_with_no_matched_receiver_input() {
 
     // dump raw test tx files
     let setup = RunningSetup {
-        is_lock_script: true,
-        is_output: false,
-        script_index: 0,
+        is_lock_script:  true,
+        is_output:       false,
+        script_index:    0,
         native_binaries: HashMap::default(),
     };
-    write_native_setup("test_error_claim_with_no_matched_receiver_input", "ckb-cheque-script-sim", &tx, &context, &setup);
+    write_native_setup(
+        "test_error_claim_with_no_matched_receiver_input",
+        "ckb-cheque-script-sim",
+        &tx,
+        &context,
+        &setup,
+    );
 }
 
 #[test]
