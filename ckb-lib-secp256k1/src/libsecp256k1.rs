@@ -5,6 +5,8 @@ use crate::alloc::{
 use crate::code_hashes::CODE_HASH_SECP256K1;
 use ckb_std::dynamic_loading::{CKBDLContext, Symbol};
 
+const CKB_SUCCESS: i32 = 0;
+
 /// function signature of validate_secp256k1_blake2b_sighash_all
 type ValidateBlake2bSighashAll = unsafe extern "C" fn(pubkey_hash: *const u8) -> i32;
 /// function signature of validate_signature
@@ -121,7 +123,7 @@ impl LibSecp256k1 {
                 &mut len as *mut u64,
             )
         };
-        if error_code != 0 {
+        if error_code != CKB_SUCCESS {
             return Err(error_code);
         }
         debug_assert_eq!(pubkey.0.len() as u64, len);

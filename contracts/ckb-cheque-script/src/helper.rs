@@ -19,25 +19,21 @@ pub fn position_input_by_lock_hash(lock_hash: &[u8; 20]) -> Option<usize> {
         .position(|cell| &hash::blake2b_160(cell.lock().as_slice()) == lock_hash)
 }
 
-pub fn filter_cells_by_lock_hash(lock_hash: &[u8; 20], source: Source) -> Option<Vec<CellOutput>> {
-    let cells = QueryIter::new(load_cell, source)
-        .filter(|cell| &hash::blake2b_160(cell.lock().as_slice()) == lock_hash)
-        .collect::<Vec<_>>();
-    if cells.len() == 0 {
-        None
-    } else {
-        Some(cells)
-    }
-}
-
 pub fn load_group_inputs_since() -> Vec<u64> {
     QueryIter::new(load_input_since, Source::GroupInput).collect::<Vec<_>>()
 }
 
-pub fn calc_cells_capacity_sum(cells: Vec<CellOutput>) -> u64 {
-    cells
-        .into_iter()
-        .fold(0, |sum, c| sum + c.capacity().unpack())
+fn add_capacity(c1: u64, c2: u64) -> Result<u64, Error> {
+    match c1.checked_add(c2) {
+        Some(sum) => Ok(sum),
+        None => Err(Error::Encoding),
+    }
+}
+
+pub fn sum_cells_capacity_of_lock_hash(lock_hash: &[u8; 20], source: Source) -> Result<u64, Error> {
+    QueryIter::new(load_cell, source)
+        .filter(|cell| &hash::blake2b_160(cell.lock().as_slice()) == lock_hash)
+        .try_fold(0, |sum, c| add_capacity(sum, c.capacity().unpack()))
 }
 
 pub fn check_witness_args(position: usize) -> Result<(), Error> {
@@ -58,12 +54,13 @@ const CODE_HASH_SECP256K1_BLAKE160: [u8; 32] = [
     155, 215, 224, 111, 62, 207, 75, 224, 242, 252, 210, 24, 139, 35, 241, 185, 252, 200, 142, 93,
     75, 101, 168, 99, 123, 23, 114, 59, 189, 163, 204, 232,
 ];
+// Recover public key from the signature 
+// and check whether the public key belongs to the receiver or sender.
 pub fn validate_blake2b_sighash_all(
     lib: &LibSecp256k1,
     receiver_lock_hash: &[u8; 20],
     sender_lock_hash: &[u8; 20],
 ) -> Result<bool, Error> {
-    // recover public_key_hash
     let mut public_key_hash = [0u8; 20];
     lib.validate_blake2b_sighash_all(&mut public_key_hash)
         .map_err(|_| Error::Secp256k1)?;
@@ -83,4 +80,3 @@ pub fn validate_blake2b_sighash_all(
         Err(Error::WrongPubKey)
     }
 }
-

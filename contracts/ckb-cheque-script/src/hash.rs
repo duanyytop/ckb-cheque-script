@@ -33,4 +33,3 @@ pub fn blake2b_160<T: AsRef<[u8]>>(s: T) -> [u8; 20] {
     result.copy_from_slice(&hash[0..20]);
     result
 }
-

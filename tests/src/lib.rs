@@ -7,6 +7,8 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
+mod helper;
+
 #[cfg(test)]
 mod entry_tests;
 
@@ -15,8 +17,6 @@ mod claim_tests;
 
 #[cfg(test)]
 mod withdraw_tests;
-
-mod native_simulator;
 
 lazy_static! {
     static ref LOADER: Loader = Loader::default();

@@ -1,7 +1,7 @@
 # ckb-cheque-script
 
-[![License](https://img.shields.io/badge/license-MIT-green)](https://github.com/duanyytop/ckb-cheque-script/blob/main/COPYING)
-[![Github Actions CI](https://github.com/duanyytop/ckb-cheque-script/workflows/CI/badge.svg?branch=main)](https://github.com/duanyytop/ckb-cheque-script/actions)
+[![License](https://img.shields.io/badge/license-MIT-green)](https://github.com/nervosnetwork/ckb-cheque-script/blob/main/COPYING)
+[![Github Actions CI](https://github.com/nervosnetwork/ckb-cheque-script/workflows/CI/badge.svg?branch=main)](https://github.com/nervosnetwork/ckb-cheque-script/actions)
 
 The lock script of cheque cell on Nervos CKB using [Capsule](https://github.com/nervosnetwork/capsule)
 
@@ -34,7 +34,7 @@ make all-via-docker
 
 ```sh
 # back to repo root directory
-cd .. 
+cd ..
 capsule build
 ```
 
