@@ -18,8 +18,6 @@ mod claim_tests;
 #[cfg(test)]
 mod withdraw_tests;
 
-mod native_simulator;
-
 lazy_static! {
     static ref LOADER: Loader = Loader::default();
     static ref TX_FOLDER: PathBuf = {

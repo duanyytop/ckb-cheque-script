@@ -1,4 +1,7 @@
-use super::{native_simulator::write_native_setup, *};
+use super::{
+    helper::{sign_tx, write_native_setup, CODE_HASH_SECP256K1_BLAKE160, TYPE, MAX_CYCLES},
+    *,
+};
 use ckb_system_scripts::BUNDLED_CELL;
 use ckb_testtool::{builtin::ALWAYS_SUCCESS, context::Context};
 use ckb_tool::ckb_crypto::secp::Generator;
@@ -10,14 +13,9 @@ use ckb_tool::ckb_types::{
     packed::*,
     prelude::*,
 };
-
 use ckb_x64_simulator::RunningSetup;
 use std::collections::HashMap;
 use std::fs;
-
-use super::helper::{sign_tx, CODE_HASH_SECP256K1_BLAKE160, TYPE};
-
-const MAX_CYCLES: u64 = 10_000_000;
 
 const INVALID_ARGUMENT: i8 = 5;
 const NO_MATCHED_INPUTS: i8 = 6;
