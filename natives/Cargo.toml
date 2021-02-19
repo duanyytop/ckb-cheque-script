@@ -9,7 +9,6 @@ edition = "2018"
 [dependencies]
 ckb-tool = "0.2.1"
 ckb-std = { git = "https://github.com/nervosnetwork/ckb-std", rev = "29455b8", features = ["ckb-types", "simulator"] }
-ckb-lib-secp256k1 = { path = "../ckb-lib-secp256k1" }
 blake2b-ref = "0.1"
 
 [features]

@@ -319,8 +319,9 @@ name = "ckb-cheque-script"
 version = "0.1.0"
 dependencies = [
  "blake2b-ref",
- "ckb-lib-secp256k1",
+ "cc",
  "ckb-std",
+ "libc",
 ]
 
 [[package]]
@@ -455,14 +456,6 @@ dependencies = [
  "jsonrpc-core",
  "serde",
  "serde_json",
-]
-
-[[package]]
-name = "ckb-lib-secp256k1"
-version = "0.1.0"
-dependencies = [
- "blake2b-rs",
- "ckb-std",
 ]
 
 [[package]]
@@ -1949,7 +1942,6 @@ name = "natives"
 version = "0.1.0"
 dependencies = [
  "blake2b-ref",
- "ckb-lib-secp256k1",
  "ckb-std",
  "ckb-tool",
 ]
