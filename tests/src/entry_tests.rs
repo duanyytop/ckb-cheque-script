@@ -178,7 +178,7 @@ fn build_test_context_with_signature(
     let always_success_out_point = context.deploy_cell(ALWAYS_SUCCESS.clone());
 
     let secp256k1_bin: Bytes =
-        fs::read("../ckb-miscellaneous-scripts/build/secp256k1_blake2b_sighash_all_dual")
+        fs::read("../contracts/ckb-cheque-script/ckb-lib-secp256k1/build/ckb-lib-secp256k1")
             .expect("load secp256k1")
             .into();
     let secp256k1_out_point = context.deploy_cell(secp256k1_bin);
