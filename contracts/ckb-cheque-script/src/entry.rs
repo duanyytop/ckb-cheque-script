@@ -59,7 +59,7 @@ pub fn main() -> Result<(), Error> {
     } else {
         // Validate the signatures of receiver and sender
         let lib = LibSecp256k1::load(&mut context);
-        match helper::validate_blake2b_sighash_all(&lib, &receiver_lock_hash, &sender_lock_hash) {
+        match helper::validate_signature_of_receiver_and_sender(&lib, &receiver_lock_hash, &sender_lock_hash) {
             Ok(is_receiver) => {
                 if is_receiver {
                     claim::validate(&sender_lock_hash, &receiver_lock_hash, cheque_witness_is_none)
