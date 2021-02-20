@@ -123,6 +123,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d9f6b7b71e3097ed6ee470bab30e1025dd1327eee94ab1e3040b5b5c3f992117"
 
 [[package]]
+name = "blake2b-ref"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "95916998c798756098a4eb1b3f2cd510659705a9817bf203d61abd30fbec3e7b"
+
+[[package]]
 name = "blake2b-rs"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -318,10 +324,9 @@ dependencies = [
 name = "ckb-cheque-script"
 version = "0.1.0"
 dependencies = [
- "blake2b-ref",
+ "blake2b-ref 0.2.1",
  "cc",
  "ckb-std",
- "libc",
 ]
 
 [[package]]
@@ -1941,7 +1946,7 @@ dependencies = [
 name = "natives"
 version = "0.1.0"
 dependencies = [
- "blake2b-ref",
+ "blake2b-ref 0.1.0",
  "ckb-std",
  "ckb-tool",
 ]

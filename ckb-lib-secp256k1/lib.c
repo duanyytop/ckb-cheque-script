@@ -1,8 +1,0 @@
-#include "blake2b.h"
-#include "blockchain.h"
-#include "ckb_syscalls.h"
-#include "defs.h"
-#include "overflow_add.h"
-#include "quick_pow10.h"
-#include "secp256k1_helper.h"
-#include "secp256k1_lock.h"
