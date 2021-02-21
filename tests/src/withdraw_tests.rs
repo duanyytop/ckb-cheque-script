@@ -351,6 +351,21 @@ fn test_error_withdraw_with_sender_input_signature() {
         ScriptError::ValidationFailure(WITNESS_SIGNATURE_WRONG)
             .input_lock_script(script_cell_index)
     );
+
+    // dump raw test tx files
+    let setup = RunningSetup {
+        is_lock_script:  true,
+        is_output:       false,
+        script_index:    0,
+        native_binaries: HashMap::default(),
+    };
+    write_native_setup(
+        "test_error_withdraw_with_sender_input_signature",
+        "ckb-cheque-script-sim",
+        &tx,
+        &context,
+        &setup,
+    );
 }
 
 #[test]
@@ -410,6 +425,21 @@ fn test_withdraw_with_sender_signature() {
         .verify_tx(&tx, MAX_CYCLES)
         .expect("pass verification");
     println!("consume cycles: {}", cycles);
+
+    // dump raw test tx files
+    let setup = RunningSetup {
+        is_lock_script:  true,
+        is_output:       false,
+        script_index:    0,
+        native_binaries: HashMap::default(),
+    };
+    write_native_setup(
+        "test_withdraw_with_sender_signature",
+        "ckb-cheque-script-sim",
+        &tx,
+        &context,
+        &setup,
+    );
 }
 
 #[test]
@@ -429,5 +459,20 @@ fn test_error_withdraw_with_sender_signature_since() {
         err,
         ScriptError::ValidationFailure(WITHDRAW_CHEQUE_INPUT_SINCE_ERROR)
             .input_lock_script(script_cell_index)
+    );
+
+    // dump raw test tx files
+    let setup = RunningSetup {
+        is_lock_script:  true,
+        is_output:       false,
+        script_index:    0,
+        native_binaries: HashMap::default(),
+    };
+    write_native_setup(
+        "test_error_withdraw_with_sender_signature_since",
+        "ckb-cheque-script-sim",
+        &tx,
+        &context,
+        &setup,
     );
 }

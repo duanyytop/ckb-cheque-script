@@ -390,4 +390,19 @@ fn test_error_with_no_matched_signature() {
         err,
         ScriptError::ValidationFailure(NO_MATCHED_SIGNATURE).input_lock_script(script_cell_index)
     );
+
+    // dump raw test tx files
+    let setup = RunningSetup {
+        is_lock_script:  true,
+        is_output:       false,
+        script_index:    0,
+        native_binaries: HashMap::default(),
+    };
+    write_native_setup(
+        "test_error_with_no_matched_signature",
+        "ckb-cheque-script-sim",
+        &tx,
+        &context,
+        &setup,
+    );
 }
