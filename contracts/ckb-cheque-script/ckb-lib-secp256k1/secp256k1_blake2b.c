@@ -6,6 +6,10 @@
 /* 32 KB */
 #define ONE_BATCH_SIZE 32768
 
+/*
+ * data should at least be CKB_SECP256K1_DATA_SIZE big
+ * so as to hold all loaded data.
+ */
 int ckb_secp256k1_custom_load_data(void *data) {
   size_t index = SIZE_MAX;
   int ret = ckb_look_for_dep_with_hash(ckb_secp256k1_data_hash, &index);
