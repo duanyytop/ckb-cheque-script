@@ -1947,6 +1947,7 @@ name = "natives"
 version = "0.1.0"
 dependencies = [
  "blake2b-ref 0.1.0",
+ "cc",
  "ckb-std",
  "ckb-tool",
 ]
