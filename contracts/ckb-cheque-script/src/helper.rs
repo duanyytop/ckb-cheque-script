@@ -4,7 +4,7 @@ use ckb_std::{
     high_level::{load_cell, load_input_since, load_witness_args, QueryIter},
 };
 
-use super::{hash, secp256k1};
+use super::hash;
 use crate::error::Error;
 use alloc::vec::Vec;
 
@@ -60,7 +60,7 @@ pub fn validate_signature_of_receiver_and_sender(
     sender_lock_hash: &[u8; 20],
 ) -> Result<bool, Error> {
     let mut public_key_hash = [0u8; 20];
-    secp256k1::validate_blake2b_signature(&mut public_key_hash)
+    validate_blake2b_signature(&mut public_key_hash)
         .map_err(|_| Error::Secp256k1)?;
 
     let lock_script = Script::new_builder()
@@ -77,4 +77,20 @@ pub fn validate_signature_of_receiver_and_sender(
     } else {
         Err(Error::WrongPubKey)
     }
+}
+
+const CKB_SUCCESS: i32 = 0;
+
+#[link(name = "ckb-lib-secp256k1", kind="static")]
+extern "C" {
+    fn validate_secp256k1_blake2b_sighash_all(pubkey_hash: *const u8) -> i32;
+}
+
+fn validate_blake2b_signature(pubkey_hash: &mut [u8; 20]) -> Result<(), i32> {
+    let error_code = unsafe { validate_secp256k1_blake2b_sighash_all(pubkey_hash.as_mut_ptr()) };
+
+    if error_code != CKB_SUCCESS {
+        return Err(error_code);
+    }
+    Ok(())
 }

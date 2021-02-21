@@ -16,7 +16,6 @@ mod entry;
 mod error;
 mod hash;
 mod helper;
-mod secp256k1;
 mod withdraw;
 
 use ckb_std::default_alloc;
