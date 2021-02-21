@@ -13,9 +13,9 @@ enable_type_id = false
 location = { tx_hash = "0x8f8c79eb6671709633fe6a46de93c0fedc9c1b8a6527a18d3983879542635c9f", index = 3 } 
 
 [[cells]]
-name = "secp256k1_blake2b_sighash_all_dual"
+name = "secp256k1_blake2b_sighash_all"
 enable_type_id = false
-location = { file = "ckb-miscellaneous-scripts/build/secp256k1_blake2b_sighash_all_dual" }
+location = { file = "contracts/ckb-cheque-script/ckb-lib-secp256k1/build/secp256k1_blake2b_sighash_all" }
 
 # Dep group cells
 [[dep_groups]]
@@ -23,7 +23,7 @@ name = "dep_group"
 cells = [
   "ckb-cheque-script",
   "secp256k1_data",
-  "secp256k1_blake2b_sighash_all_dual"
+  "secp256k1_blake2b_sighash_all"
 ]
 
 # Replace with your own lock if you want to unlock deployed cells. 

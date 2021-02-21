@@ -22,19 +22,19 @@ The lock script of cheque cell on Nervos CKB using [Capsule](https://github.com/
 git submodule init && git submodule update -r --init
 ```
 
-- Build the shared binary `secp256k1_blake2b_sighash_all_dual`:
+- Build the shared binary `secp256k1_blake2b_sighash_all`:
 
 ```
-cd ckb-miscellaneous-scripts && git submodule init && git submodule update
-
-make all-via-docker
+cd contracts/ckb-cheque-script/ckb-lib-secp256k1/ckb-production-scripts
+git submodule init && git submodule update
+cd .. && make all-via-docker
 ```
 
 - Build contracts:
 
 ```sh
 # back to repo root directory
-cd ..
+cd ../../..
 capsule build
 ```
 
