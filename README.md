@@ -9,7 +9,6 @@ The lock script of cheque cell on Nervos CKB using [Capsule](https://github.com/
 
 - [capsule](https://github.com/nervosnetwork/capsule) >= 0.4.3
 - [ckb-cli](https://github.com/nervosnetwork/ckb-cli) >= 0.35.0
-- [secp256k1_blake2b_sighash_all_dual](https://github.com/nervosnetwork/ckb-miscellaneous-scripts/blob/master/c/secp256k1_blake2b_sighash_all_dual.c) which supports loaded as a shared library.
 
 > Note: Capsule uses docker to build contracts and run tests. https://docs.docker.com/get-docker/
 > and docker and ckb-cli must be accessible in the PATH in order for them to be used by Capsule.
@@ -22,7 +21,7 @@ The lock script of cheque cell on Nervos CKB using [Capsule](https://github.com/
 git submodule init && git submodule update -r --init
 ```
 
-- Build the shared binary `secp256k1_blake2b_sighash_all`:
+- Generator static linking for secp256k1:
 
 ```
 cd contracts/ckb-cheque-script/ckb-lib-secp256k1/ckb-production-scripts

@@ -171,12 +171,6 @@ fn build_test_context_with_receiver_signature(
     // deploy always_success script
     let always_success_out_point = context.deploy_cell(ALWAYS_SUCCESS.clone());
 
-    let secp256k1_bin: Bytes =
-        fs::read("../contracts/ckb-cheque-script/ckb-lib-secp256k1/build/secp256k1_blake2b_sighash_all")
-            .expect("load secp256k1")
-            .into();
-    let secp256k1_out_point = context.deploy_cell(secp256k1_bin);
-
     let secp256k1_data_bin = BUNDLED_CELL.get("specs/cells/secp256k1_data").unwrap();
     let secp256k1_data_out_point = context.deploy_cell(secp256k1_data_bin.to_vec().into());
     let secp256k1_data_dep = CellDep::new_builder()
@@ -206,9 +200,6 @@ fn build_test_context_with_receiver_signature(
         .build();
     let sender_secp256k1_lock_hash = sender_secp256k1_lock_script.calc_script_hash();
 
-    let secp256k1_dep = CellDep::new_builder()
-        .out_point(secp256k1_out_point)
-        .build();
     let always_success_lock_script_dep = CellDep::new_builder()
         .out_point(always_success_out_point)
         .build();
@@ -289,7 +280,6 @@ fn build_test_context_with_receiver_signature(
         .outputs(outputs)
         .outputs_data(outputs_data.pack())
         .cell_dep(cheque_script_dep)
-        .cell_dep(secp256k1_dep)
         .cell_dep(secp256k1_data_dep)
         .cell_dep(always_success_lock_script_dep)
         .witnesses(witnesses.pack())

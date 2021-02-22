@@ -8,8 +8,9 @@ build = "build.rs"
 
 [build-dependencies]
 cc = "1.0"
+blake2b-rs = "0.2.0"
 
 [dependencies]
 # For simulator support
 ckb-std = { git = "https://github.com/nervosnetwork/ckb-std", rev = "29455b8" }
-blake2b-ref = "0.2.0"
+blake2b-ref = "0.3.0"
