@@ -1,4 +1,3 @@
-use ckb_lib_secp256k1::LibSecp256k1;
 use ckb_std::{
     ckb_constants::Source,
     ckb_types::{packed::*, prelude::*},
@@ -57,12 +56,11 @@ const CODE_HASH_SECP256K1_BLAKE160: [u8; 32] = [
 // Recover public key from the signature 
 // and check whether the public key belongs to the receiver or sender.
 pub fn validate_signature_of_receiver_and_sender(
-    lib: &LibSecp256k1,
     receiver_lock_hash: &[u8; 20],
     sender_lock_hash: &[u8; 20],
 ) -> Result<bool, Error> {
     let mut public_key_hash = [0u8; 20];
-    lib.validate_blake2b_sighash_all(&mut public_key_hash)
+    validate_blake2b_signature(&mut public_key_hash)
         .map_err(|_| Error::Secp256k1)?;
 
     let lock_script = Script::new_builder()
@@ -79,4 +77,20 @@ pub fn validate_signature_of_receiver_and_sender(
     } else {
         Err(Error::WrongPubKey)
     }
+}
+
+const CKB_SUCCESS: i32 = 0;
+
+#[link(name = "ckb-lib-secp256k1", kind="static")]
+extern "C" {
+    fn validate_secp256k1_blake2b_sighash_all(pubkey_hash: *const u8) -> i32;
+}
+
+fn validate_blake2b_signature(pubkey_hash: &mut [u8; 20]) -> Result<(), i32> {
+    let error_code = unsafe { validate_secp256k1_blake2b_sighash_all(pubkey_hash.as_mut_ptr()) };
+
+    if error_code != CKB_SUCCESS {
+        return Err(error_code);
+    }
+    Ok(())
 }
