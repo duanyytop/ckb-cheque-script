@@ -1,4 +1,7 @@
-use super::{native_simulator::write_native_setup, *};
+use super::{
+    helper::{sign_tx, write_native_setup, CODE_HASH_SECP256K1_BLAKE160, TYPE, MAX_CYCLES},
+    *,
+};
 use ckb_system_scripts::BUNDLED_CELL;
 use ckb_testtool::{builtin::ALWAYS_SUCCESS, context::Context};
 use ckb_tool::ckb_crypto::secp::Generator;
@@ -10,14 +13,8 @@ use ckb_tool::ckb_types::{
     packed::*,
     prelude::*,
 };
-
 use ckb_x64_simulator::RunningSetup;
 use std::collections::HashMap;
-use std::fs;
-
-use super::helper::{sign_tx, CODE_HASH_SECP256K1_BLAKE160, TYPE};
-
-const MAX_CYCLES: u64 = 10_000_000;
 
 const INVALID_ARGUMENT: i8 = 5;
 const NO_MATCHED_INPUTS: i8 = 6;
@@ -179,12 +176,6 @@ fn build_test_context_with_signature(
     // deploy always_success script
     let always_success_out_point = context.deploy_cell(ALWAYS_SUCCESS.clone());
 
-    let secp256k1_bin: Bytes =
-        fs::read("../ckb-miscellaneous-scripts/build/secp256k1_blake2b_sighash_all_dual")
-            .expect("load secp256k1")
-            .into();
-    let secp256k1_out_point = context.deploy_cell(secp256k1_bin);
-
     let secp256k1_data_bin = BUNDLED_CELL.get("specs/cells/secp256k1_data").unwrap();
     let secp256k1_data_out_point = context.deploy_cell(secp256k1_data_bin.to_vec().into());
     let secp256k1_data_dep = CellDep::new_builder()
@@ -223,9 +214,6 @@ fn build_test_context_with_signature(
         .build_script(&cheque_out_point, Bytes::copy_from_slice(&cheque_lock_args))
         .expect("script");
 
-    let secp256k1_dep = CellDep::new_builder()
-        .out_point(secp256k1_out_point)
-        .build();
     let always_success_lock_script_dep = CellDep::new_builder()
         .out_point(always_success_out_point)
         .build();
@@ -295,7 +283,6 @@ fn build_test_context_with_signature(
         .outputs_data(outputs_data.pack())
         .cell_dep(cheque_script_dep)
         .cell_dep(secp256k1_data_dep)
-        .cell_dep(secp256k1_dep)
         .cell_dep(always_success_lock_script_dep)
         .witnesses(witnesses.pack())
         .build();
@@ -391,5 +378,20 @@ fn test_error_with_no_matched_signature() {
     assert_error_eq!(
         err,
         ScriptError::ValidationFailure(NO_MATCHED_SIGNATURE).input_lock_script(script_cell_index)
+    );
+
+    // dump raw test tx files
+    let setup = RunningSetup {
+        is_lock_script:  true,
+        is_output:       false,
+        script_index:    0,
+        native_binaries: HashMap::default(),
+    };
+    write_native_setup(
+        "test_error_with_no_matched_signature",
+        "ckb-cheque-script-sim",
+        &tx,
+        &context,
+        &setup,
     );
 }

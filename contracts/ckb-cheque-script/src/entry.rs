@@ -18,11 +18,9 @@
 
 use core::result::Result;
 
-use ckb_lib_secp256k1::LibSecp256k1;
 use ckb_std::{
     ckb_constants::Source,
     ckb_types::{bytes::Bytes, prelude::*},
-    dynamic_loading::CKBDLContext,
     high_level::{load_script, load_witness_args},
 };
 
@@ -32,9 +30,6 @@ use super::withdraw;
 use crate::error::Error;
 
 pub fn main() -> Result<(), Error> {
-    // The stack will be reserved by code
-    let mut context = unsafe { CKBDLContext::<[u8; 128 * 1024]>::new() };
-
     let script = load_script()?;
     let args: Bytes = script.args().unpack();
     if args.len() != 40 {
@@ -58,8 +53,7 @@ pub fn main() -> Result<(), Error> {
         }
     } else {
         // Validate the signatures of receiver and sender
-        let lib = LibSecp256k1::load(&mut context);
-        match helper::validate_blake2b_sighash_all(&lib, &receiver_lock_hash, &sender_lock_hash) {
+        match helper::validate_signature_of_receiver_and_sender(&receiver_lock_hash, &sender_lock_hash) {
             Ok(is_receiver) => {
                 if is_receiver {
                     claim::validate(&sender_lock_hash, &receiver_lock_hash, cheque_witness_is_none)

@@ -2,6 +2,8 @@
 target/*
 .cache/.cargo/*
 contracts/**/target/*
+contracts/**/build/*
+contracts/**/build-x86/*
 
 # C
 contracts/c/build/*

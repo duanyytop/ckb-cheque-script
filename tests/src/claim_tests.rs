@@ -1,4 +1,7 @@
-use super::{native_simulator::write_native_setup, *};
+use super::{
+    helper::{blake160, sign_tx, write_native_setup, CODE_HASH_SECP256K1_BLAKE160, TYPE, MAX_CYCLES},
+    *,
+};
 use ckb_system_scripts::BUNDLED_CELL;
 use ckb_testtool::{builtin::ALWAYS_SUCCESS, context::Context};
 use ckb_tool::ckb_crypto::secp::Generator;
@@ -10,13 +13,8 @@ use ckb_tool::ckb_types::{
     packed::*,
     prelude::*,
 };
-
 use ckb_x64_simulator::RunningSetup;
 use std::collections::HashMap;
-
-use super::helper::{blake160, sign_tx, CODE_HASH_SECP256K1_BLAKE160, TYPE};
-
-const MAX_CYCLES: u64 = 10_000_000;
 
 const WITNESS_SIGNATURE_WRONG: i8 = 7;
 const SENDER_CAPACITY_NOT_SAME: i8 = 8;
@@ -173,12 +171,6 @@ fn build_test_context_with_receiver_signature(
     // deploy always_success script
     let always_success_out_point = context.deploy_cell(ALWAYS_SUCCESS.clone());
 
-    let secp256k1_bin: Bytes =
-        fs::read("../ckb-miscellaneous-scripts/build/secp256k1_blake2b_sighash_all_dual")
-            .expect("load secp256k1")
-            .into();
-    let secp256k1_out_point = context.deploy_cell(secp256k1_bin);
-
     let secp256k1_data_bin = BUNDLED_CELL.get("specs/cells/secp256k1_data").unwrap();
     let secp256k1_data_out_point = context.deploy_cell(secp256k1_data_bin.to_vec().into());
     let secp256k1_data_dep = CellDep::new_builder()
@@ -208,9 +200,6 @@ fn build_test_context_with_receiver_signature(
         .build();
     let sender_secp256k1_lock_hash = sender_secp256k1_lock_script.calc_script_hash();
 
-    let secp256k1_dep = CellDep::new_builder()
-        .out_point(secp256k1_out_point)
-        .build();
     let always_success_lock_script_dep = CellDep::new_builder()
         .out_point(always_success_out_point)
         .build();
@@ -291,7 +280,6 @@ fn build_test_context_with_receiver_signature(
         .outputs(outputs)
         .outputs_data(outputs_data.pack())
         .cell_dep(cheque_script_dep)
-        .cell_dep(secp256k1_dep)
         .cell_dep(secp256k1_data_dep)
         .cell_dep(always_success_lock_script_dep)
         .witnesses(witnesses.pack())
@@ -364,6 +352,21 @@ fn test_error_claim_with_receiver_input_signature() {
         ScriptError::ValidationFailure(WITNESS_SIGNATURE_WRONG)
             .input_lock_script(script_cell_index)
     );
+
+    // dump raw test tx files
+    let setup = RunningSetup {
+        is_lock_script:  true,
+        is_output:       false,
+        script_index:    0,
+        native_binaries: HashMap::default(),
+    };
+    write_native_setup(
+        "test_error_claim_with_receiver_input_signature",
+        "ckb-cheque-script-sim",
+        &tx,
+        &context,
+        &setup,
+    );
 }
 
 #[test]
@@ -385,6 +388,21 @@ fn test_error_claim_with_receiver_input_signature_empty() {
         err,
         ScriptError::ValidationFailure(WITNESS_SIGNATURE_WRONG)
             .input_lock_script(script_cell_index)
+    );
+
+    // dump raw test tx files
+    let setup = RunningSetup {
+        is_lock_script:  true,
+        is_output:       false,
+        script_index:    0,
+        native_binaries: HashMap::default(),
+    };
+    write_native_setup(
+        "test_error_claim_with_receiver_input_signature_empty",
+        "ckb-cheque-script-sim",
+        &tx,
+        &context,
+        &setup,
     );
 }
 
@@ -485,6 +503,21 @@ fn test_claim_with_receiver_signature() {
         .verify_tx(&tx, MAX_CYCLES)
         .expect("pass verification");
     println!("consume cycles: {}", cycles);
+
+    // dump raw test tx files
+    let setup = RunningSetup {
+        is_lock_script:  true,
+        is_output:       false,
+        script_index:    0,
+        native_binaries: HashMap::default(),
+    };
+    write_native_setup(
+        "test_claim_with_receiver_signature",
+        "ckb-cheque-script-sim",
+        &tx,
+        &context,
+        &setup,
+    );
 }
 
 #[test]
@@ -503,10 +536,25 @@ fn test_error_claim_with_receiver_signature_capacity() {
         ScriptError::ValidationFailure(SENDER_CAPACITY_NOT_SAME)
             .input_lock_script(script_cell_index)
     );
+
+    // dump raw test tx files
+    let setup = RunningSetup {
+        is_lock_script:  true,
+        is_output:       false,
+        script_index:    0,
+        native_binaries: HashMap::default(),
+    };
+    write_native_setup(
+        "test_error_claim_with_receiver_signature_capacity",
+        "ckb-cheque-script-sim",
+        &tx,
+        &context,
+        &setup,
+    );
 }
 
 #[test]
-fn test_error_claim_with_receiver_signature_since_() {
+fn test_error_claim_with_receiver_signature_since() {
     let (context, tx) = build_test_context_with_receiver_signature(
         Bytes::from(hex::decode("36c329ed630d6ce750712a477543672adab57f4c").unwrap()),
         vec![162_0000_0000, 200_0000_0000],
@@ -520,5 +568,20 @@ fn test_error_claim_with_receiver_signature_since_() {
         err,
         ScriptError::ValidationFailure(CLAIM_CHEQUE_INPUT_SINCE_NOT_ZERO)
             .input_lock_script(script_cell_index)
+    );
+
+    // dump raw test tx files
+    let setup = RunningSetup {
+        is_lock_script:  true,
+        is_output:       false,
+        script_index:    0,
+        native_binaries: HashMap::default(),
+    };
+    write_native_setup(
+        "test_error_claim_with_receiver_signature_since",
+        "ckb-cheque-script-sim",
+        &tx,
+        &context,
+        &setup,
     );
 }
