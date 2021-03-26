@@ -54,7 +54,7 @@ const CODE_HASH_SECP256K1_BLAKE160: [u8; 32] = [
     75, 101, 168, 99, 123, 23, 114, 59, 189, 163, 204, 232,
 ];
 // Recover public key from the signature 
-// and check whether the public key belongs to the receiver or sender.
+// and check whether the public key belongs to the receiver or the sender.
 pub fn validate_signature_of_receiver_and_sender(
     receiver_lock_hash: &[u8; 20],
     sender_lock_hash: &[u8; 20],
