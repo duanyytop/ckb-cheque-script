@@ -147,12 +147,6 @@ fn build_test_context_with_sender_signature(
     let cheque_bin: Bytes = Loader::default().load_binary("ckb-cheque-script");
     let cheque_out_point = context.deploy_cell(cheque_bin);
 
-    let secp256k1_bin: Bytes =
-        fs::read("../ckb-miscellaneous-scripts/build/secp256k1_blake2b_sighash_all_dual")
-            .expect("load secp256k1")
-            .into();
-    let secp256k1_out_point = context.deploy_cell(secp256k1_bin);
-
     let secp256k1_data_bin = BUNDLED_CELL.get("specs/cells/secp256k1_data").unwrap();
     let secp256k1_data_out_point = context.deploy_cell(secp256k1_data_bin.to_vec().into());
     let secp256k1_data_dep = CellDep::new_builder()
@@ -172,10 +166,6 @@ fn build_test_context_with_sender_signature(
         .hash_type(Byte::new(TYPE))
         .build();
     let sender_secp256k1_lock_hash = sender_secp256k1_lock_script.calc_script_hash();
-
-    let secp256k1_dep = CellDep::new_builder()
-        .out_point(secp256k1_out_point)
-        .build();
 
     let mut cheque_lock_args = receiver_secp256k1_lock_hash
         .as_bytes()
@@ -236,7 +226,6 @@ fn build_test_context_with_sender_signature(
         .outputs(outputs)
         .outputs_data(outputs_data.pack())
         .cell_dep(cheque_script_dep)
-        .cell_dep(secp256k1_dep)
         .cell_dep(secp256k1_data_dep)
         .witnesses(witnesses.pack())
         .build();
@@ -351,6 +340,21 @@ fn test_error_withdraw_with_sender_input_signature() {
         ScriptError::ValidationFailure(WITNESS_SIGNATURE_WRONG)
             .input_lock_script(script_cell_index)
     );
+
+    // dump raw test tx files
+    let setup = RunningSetup {
+        is_lock_script:  true,
+        is_output:       false,
+        script_index:    0,
+        native_binaries: HashMap::default(),
+    };
+    write_native_setup(
+        "test_error_withdraw_with_sender_input_signature",
+        "ckb-cheque-script-sim",
+        &tx,
+        &context,
+        &setup,
+    );
 }
 
 #[test]
@@ -410,6 +414,21 @@ fn test_withdraw_with_sender_signature() {
         .verify_tx(&tx, MAX_CYCLES)
         .expect("pass verification");
     println!("consume cycles: {}", cycles);
+
+    // dump raw test tx files
+    let setup = RunningSetup {
+        is_lock_script:  true,
+        is_output:       false,
+        script_index:    0,
+        native_binaries: HashMap::default(),
+    };
+    write_native_setup(
+        "test_withdraw_with_sender_signature",
+        "ckb-cheque-script-sim",
+        &tx,
+        &context,
+        &setup,
+    );
 }
 
 #[test]
@@ -429,5 +448,20 @@ fn test_error_withdraw_with_sender_signature_since() {
         err,
         ScriptError::ValidationFailure(WITHDRAW_CHEQUE_INPUT_SINCE_ERROR)
             .input_lock_script(script_cell_index)
+    );
+
+    // dump raw test tx files
+    let setup = RunningSetup {
+        is_lock_script:  true,
+        is_output:       false,
+        script_index:    0,
+        native_binaries: HashMap::default(),
+    };
+    write_native_setup(
+        "test_error_withdraw_with_sender_signature_since",
+        "ckb-cheque-script-sim",
+        &tx,
+        &context,
+        &setup,
     );
 }
